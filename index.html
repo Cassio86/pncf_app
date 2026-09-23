@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login com Google</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #googleSignInButton {
+            display: flex;
+            justify-content: center;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #999;
+            font-size: 12px;
+            width: 100%;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #333;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #3c4043;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-google:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn-google img {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Acesso Seguro</h1>
+            <p>Faça login para continuar</p>
+        </div>
+
+        <div class="login-section">
+            <div id="status" class="status"></div>
+
+            <div id="googleSignInButton"></div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Autenticando...</p>
+            </div>
+
+            <div class="info-box">
+                <strong>ℹ️ Informação:</strong><br>
+                Você será redirecionado para a página do menu após autenticar com sucesso.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Substitua pelos seus dados do Google Cloud Console
+        const GOOGLE_CLIENT_ID = '146518153903-6mnlr7g4nq7k9pmqpehf76dsp8esegto.apps.googleusercontent.com';
+        let tokenClient;
+
+        // Inicializa o Google Sign-In
+        window.onload = function () {
+            // Verifica se já está autenticado
+            checkAuthStatus();
+
+            // Inicializa o Token Client do Google Identity Services (OAuth2)
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: GOOGLE_CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+                callback: handleTokenResponse,
+            });
+
+            // Cria o botão customizado
+            const btnContainer = document.getElementById('googleSignInButton');
+            btnContainer.innerHTML = '<button id="btnAuth" class="btn-google"><img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">Fazer Login com o Google</button>';
+            document.getElementById('btnAuth').onclick = () => {
+                tokenClient.requestAccessToken();
+            };
+        };
+
+        // Processa a resposta do Token Access do Google
+        async function handleTokenResponse(response) {
+            if (response.error !== undefined) {
+                console.error('Erro na autenticação do Google:', response.error);
+                showError('Falha ao autenticar com o Google.');
+                return;
+            }
+
+            showLoading(true);
+            const status = document.getElementById('status');
+
+            try {
+                // Obtém os dados do usuário usando o Access Token através da API userinfo
+                const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${response.access_token}` }
+                });
+
+                if (!userInfoRes.ok) throw new Error('Falha ao obter user info');
+                const tokenPayload = await userInfoRes.json();
+
+                // Envia os dados para o backend para validação e cadastro
+                const res = await fetch('https://18.217.219.60:8080/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: tokenPayload.name,
+                        email: tokenPayload.email
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    // Armazena as informações no localStorage
+                    localStorage.setItem('userEmail', tokenPayload.email);
+                    localStorage.setItem('userName', tokenPayload.name);
+                    localStorage.setItem('userPicture', tokenPayload.picture || '');
+                    localStorage.setItem('authToken', response.access_token);
+                    localStorage.setItem('isAuthenticated', 'true');
+
+                    if (data.user) {
+                        localStorage.setItem('userPerfil', data.user.id_perfil);
+                        localStorage.setItem('userId', data.user.id);
+                    }
+
+                    // Mostra mensagem de sucesso
+                    status.classList.remove('error');
+                    status.classList.add('success');
+                    status.textContent = `✓ Login bem-sucedido! Bem-vindo, ${tokenPayload.name}!`;
+
+                    // Redireciona para menu.html após 1.5 segundos
+                    setTimeout(() => {
+                        window.location.href = 'menu.html';
+                    }, 1500);
+                } else {
+                    // Falha na validação do backend (ex: inativo ou criado)
+                    showError(data.message);
+                    showLoading(false);
+                }
+
+            } catch (error) {
+                console.error('Erro ao processar autenticação:', error);
+                showError('Erro ao conectar ao servidor. Tente novamente.');
+                showLoading(false);
+            }
+        }
+
+        // Verifica se o usuário já está autenticado
+        function checkAuthStatus() {
+            if (localStorage.getItem('isAuthenticated') === 'true') {
+                window.location.href = 'menu.html';
+            }
+        }
+
+        // Função para fazer logout
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        // Funções auxiliares
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+            document.getElementById('googleSignInButton').style.display = show ? 'none' : 'flex';
+        }
+
+        function showError(message) {
+            const status = document.getElementById('status');
+            status.classList.add('error');
+            status.classList.remove('success');
+            status.textContent = '✗ ' + message;
+            status.style.display = 'block';
+        }
+
+        // Disponibiliza logout globalmente
+        window.logout = logout;
+    </script>
+</body>
+
+</html>

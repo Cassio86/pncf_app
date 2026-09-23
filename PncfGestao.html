@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PNCF Gestão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+
+<style>
+  :root {
+    --ink: #0A1428;
+    --navy: #0E1F3F;
+    --navy-2: #163062;
+    --blue: #2563EB;
+    --blue-2: #3B82F6;
+    --sky: #0EA5E9;
+    --green: #10B981;
+    --amber: #F59E0B;
+    --red: #EF4444;
+    --violet: #8B5CF6;
+
+    --bg: #EDF1F8;
+    --surface: #FFFFFF;
+    --line: #E2E8F2;
+    --text: #0F172A;
+    --muted: #64748B;
+    --muted-2: #94A3B8;
+
+    --r-lg: 20px;
+    --r-md: 14px;
+    --r-sm: 10px;
+    --shadow-1: 0 1px 2px rgba(15,23,42,.05), 0 10px 28px -14px rgba(15,23,42,.16);
+    --shadow-2: 0 2px 4px rgba(15,23,42,.06), 0 22px 44px -18px rgba(15,23,42,.26);
+    --sidebar-w: 272px;
+    --topbar-h: 68px;
+
+    --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-body);
+    color: var(--text);
+    background:
+      radial-gradient(900px 480px at 92% -8%, rgba(59,130,246,.13), transparent 60%),
+      radial-gradient(700px 420px at 8% 108%, rgba(16,185,129,.09), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: 0; }
+  :focus-visible { outline: 2px solid var(--blue-2); outline-offset: 2px; border-radius: 8px; }
+  .ico { display: inline-flex; width: 20px; height: 20px; flex: none; }
+  .ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ───────── Layout ───────── */
+  .app { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); height: 100vh; }
+  .main { display: flex; flex-direction: column; min-width: 0; height: 100vh; }
+  .content { flex: 1; min-height: 0; overflow: auto; position: relative; scroll-behavior: smooth; }
+  .content.flush { overflow: hidden; }
+  .view { display: none; padding: 30px 36px 48px; max-width: 1520px; margin: 0 auto; }
+  .view.active { display: block; }
+  .view.frame { padding: 0; max-width: none; margin: 0; position: absolute; inset: 0; }
+
+  /* ───────── Sidebar ───────── */
+  .sidebar {
+    position: relative; display: flex; flex-direction: column; overflow-y: auto;
+    padding: 22px 16px 18px;
+    color: #C7D2E8;
+    background:
+      radial-gradient(420px 260px at -10% -6%, rgba(59,130,246,.34), transparent 65%),
+      radial-gradient(360px 300px at 110% 108%, rgba(16,185,129,.16), transparent 65%),
+      linear-gradient(180deg, #0B1936 0%, #0E1F3F 55%, #0A162E 100%);
+    box-shadow: 1px 0 0 rgba(255,255,255,.04), 12px 0 40px -24px rgba(10,20,40,.6);
+    z-index: 30;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 4px 8px 22px; }
+  .brand-mark { width: 42px; height: 42px; border-radius: 13px; flex: none; box-shadow: 0 8px 20px -6px rgba(37,99,235,.7); }
+  .brand-name { font-family: var(--font-display); font-weight: 800; font-size: 19px; letter-spacing: -.02em; color: #fff; line-height: 1.1; }
+  .brand-sub { font-size: 12px; color: #8FA2C6; margin-top: 3px; }
+
+  .nav-group { margin-top: 18px; }
+  .nav-title { font-size: 12px; font-weight: 600; color: #7F93B8; padding: 0 12px 8px; letter-spacing: .02em; }
+  .nav-item {
+    position: relative; display: flex; align-items: center; gap: 12px;
+    width: 100%; height: 44px; padding: 0 12px; margin-bottom: 3px;
+    color: #B8C6E2; font-size: 14px; font-weight: 500; text-decoration: none; text-align: left;
+    border-radius: 12px; transition: background .18s, color .18s;
+  }
+  .nav-item .ico { color: #7F93B8; transition: color .18s; }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .nav-item:hover .ico { color: #C7D8FF; }
+  .nav-item[aria-current="page"] {
+    color: #fff; font-weight: 600;
+    background: linear-gradient(90deg, rgba(59,130,246,.30), rgba(59,130,246,.08));
+    box-shadow: inset 0 0 0 1px rgba(96,165,250,.20);
+  }
+  .nav-item[aria-current="page"] .ico { color: #7DB2FF; }
+  .nav-item[aria-current="page"]::before {
+    content: ""; position: absolute; left: -16px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0;
+    background: #60A5FA; box-shadow: 0 0 14px rgba(96,165,250,.9);
+  }
+  .nav-spacer { flex: 1; min-height: 24px; }
+  .nav-foot { border-top: 1px solid rgba(255,255,255,.08); padding-top: 14px; margin-top: 10px; }
+
+
+  /* ───────── Menu recolhível (desktop) ───────── */
+  .app { position: relative; }
+  .app.rail { grid-template-columns: minmax(0,1fr); }
+  .app.rail .sidebar { display: none; }
+  .rail-inline {
+    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #9FB3D6; background: linear-gradient(180deg, #16294E, #0E1F3F);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
+    align-self: center; margin-left: 4px; margin-top: -14px;
+    transition: background .18s, color .18s, box-shadow .18s, transform .18s;
+  }
+  .rail-inline:hover { color: #fff; transform: scale(1.12); box-shadow: 0 4px 16px rgba(37,99,235,.5), inset 0 0 0 1px rgba(125,178,255,.35); }
+  .rail-inline .ico { width: 13px; height: 13px; }
+  .collapse-btn {
+    display: none;
+    position: fixed; top: 18px; left: 18px;
+    width: 40px; height: 40px; border-radius: 50%;
+    align-items: center; justify-content: center;
+    color: #BFD5FF; background: linear-gradient(180deg, #1B345F, #122544);
+    box-shadow: 0 6px 24px rgba(8,15,30,.75), 0 0 0 1px rgba(96,165,250,.35), 0 0 22px rgba(59,130,246,.45);
+    z-index: 45;
+  }
+  .app.rail .collapse-btn { display: inline-flex; animation: railFloat 2.6s ease-in-out infinite; }
+  @keyframes railFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .app.rail .collapse-btn:hover { transform: scale(1.1); animation: none; }
+  .app.rail .collapse-btn .ico { transform: rotate(180deg); width: 18px; height: 18px; }
+  @media (max-width: 1080px) { .collapse-btn { display: none; } .app.rail { grid-template-columns: var(--sidebar-w) minmax(0,1fr); } .app.rail .sidebar { display: block; } }
+
+  /* ───────── Topbar ───────── */
+  .topbar {
+    height: var(--topbar-h); flex: none; display: flex; align-items: center; gap: 14px; padding: 0 28px 0 30px;
+    background: rgba(255,255,255,.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line); z-index: 20;
+  }
+  .burger { display: none; width: 40px; height: 40px; border-radius: 12px; align-items: center; justify-content: center; color: var(--text); }
+  .burger:hover { background: #EEF2FA; }
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-width: 0; }
+  .crumb b { color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .crumb .ico { width: 14px; height: 14px; color: var(--muted-2); }
+  .top-spacer { flex: 1; }
+  .top-actions { display: flex; align-items: center; gap: 8px; }
+  .user-chip { display: flex; align-items: center; gap: 11px; padding-left: 16px; margin-left: 6px; border-left: 1px solid var(--line); }
+  .user-meta { text-align: right; line-height: 1.25; }
+  .user-meta b { display: block; font-size: 13px; font-weight: 600; }
+  .user-meta span { font-size: 12px; color: var(--muted); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 12px; flex: none; display: grid; place-items: center;
+    font-family: var(--font-display); font-weight: 800; font-size: 15px; color: #fff;
+    background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 6px 14px -6px rgba(16,185,129,.8);
+  }
+
+  /* ───────── Botões ───────── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px;
+    border-radius: 12px; font-size: 13.5px; font-weight: 600; white-space: nowrap;
+    transition: transform .15s, box-shadow .2s, background .2s, border-color .2s;
+  }
+  .btn .ico { width: 17px; height: 17px; }
+  .btn-ghost { background: #fff; border: 1px solid var(--line); color: var(--text); }
+  .btn-ghost:hover { border-color: #C9D5EA; background: #F8FAFF; }
+  .btn-primary { color: #fff; background: linear-gradient(135deg, #3B82F6, #2563EB); box-shadow: 0 10px 20px -10px rgba(37,99,235,.9); }
+  .btn-primary:hover { box-shadow: 0 14px 24px -10px rgba(37,99,235,1); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-danger-ghost { color: var(--red); }
+  .btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 10px; color: var(--muted); }
+  .btn-icon:hover { background: #EEF2FA; color: var(--text); }
+  .btn-icon.danger:hover { background: #FEECEC; color: var(--red); }
+  .btn-sm { height: 34px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
+  .spin .ico svg { animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ───────── Cabeçalho de página ───────── */
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 26px; flex-wrap: wrap; }
+  .page-head h1 { font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+  .page-head p { color: var(--muted); font-size: 14.5px; margin-top: 8px; max-width: 62ch; }
+  .head-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .stamp { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .stamp i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(16,185,129,.16); }
+  .stamp.busy i { background: var(--amber); box-shadow: 0 0 0 4px rgba(245,158,11,.18); animation: pulse 1.2s ease-in-out infinite; }
+  .stamp.off i { background: var(--red); box-shadow: 0 0 0 4px rgba(239,68,68,.16); }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .chip-filter {
+    display: none; align-items: center; gap: 8px; height: 34px; padding: 0 6px 0 12px; border-radius: 999px;
+    background: rgba(37,99,235,.09); color: var(--blue); font-size: 13px; font-weight: 600;
+  }
+  .chip-filter.show { display: inline-flex; }
+  .chip-filter button { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: var(--blue); }
+  .chip-filter button:hover { background: rgba(37,99,235,.16); }
+  .chip-filter .ico { width: 13px; height: 13px; }
+
+  .notice {
+    display: none; align-items: flex-start; gap: 12px; padding: 13px 16px; margin-bottom: 20px; border-radius: var(--r-md);
+    font-size: 13.5px; line-height: 1.5; border: 1px solid;
+  }
+  .notice.show { display: flex; }
+  .notice .ico { margin-top: 1px; }
+  .notice.warn { background: #FFF8EA; border-color: #F7DFA8; color: #7A5306; }
+  .notice.err { background: #FEF1F1; border-color: #F6C9C9; color: #8A1F1F; }
+  .notice.info { background: #EEF5FF; border-color: #CFE0FB; color: #1D4A9A; }
+  .notice .grow { flex: 1; }
+  .notice button.link { font-weight: 700; text-decoration: underline; color: inherit; }
+
+  /* ───────── Cards ───────── */
+  .card { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-1); border: 1px solid rgba(226,232,242,.7); }
+  .card-pad { padding: 22px 24px; }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .card-head h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+  .card-head p { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+
+  .grid { display: grid; gap: 20px; }
+  .g-top { grid-template-columns: minmax(280px, 1fr) minmax(0, 2.3fr); margin-bottom: 20px; align-items: stretch; }
+  .g-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 20px; }
+
+  /* KPI */
+  .kpi { position: relative; padding: 22px 24px 20px 28px; overflow: hidden; }
+  .kpi::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 4px; border-radius: 0 4px 4px 0; background: var(--kc); }
+  .kpi-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .kpi-label { font-size: 13.5px; font-weight: 500; color: var(--muted); }
+  .kpi-chip { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--kc); background: color-mix(in srgb, var(--kc) 12%, white); }
+  .kpi-val { font-family: var(--font-display); font-size: 40px; font-weight: 800; letter-spacing: -.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi-cap { font-size: 12.5px; color: var(--muted); margin-top: 12px; }
+  .kpi-bar { height: 6px; border-radius: 99px; background: #EEF2F8; margin-top: 14px; overflow: hidden; }
+  .kpi-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--kc); transition: width 1s cubic-bezier(.2,.8,.2,1); }
+  .kpi .btn-icon { position: absolute; right: 12px; bottom: 10px; width: 30px; height: 30px; }
+  .kpi .btn-icon .ico { width: 16px; height: 16px; }
+  .kpi-hero { display: flex; flex-direction: column; justify-content: center; }
+  .kpi-hero .kpi-val { font-size: 52px; }
+
+  /* Pipeline por status */
+  .pipe-card { display: flex; flex-direction: column; justify-content: center; }
+  .pipe-total { display: flex; align-items: baseline; gap: 8px; margin-bottom: 18px; }
+  .pipe-total b { font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -.03em; color: var(--text); }
+  .pipe-total span { font-size: 13px; color: var(--muted); }
+  .pipe-list { display: flex; flex-direction: column; gap: 15px; }
+  .pipe-row { display: grid; grid-template-columns: minmax(0,172px) 1fr auto; align-items: center; gap: 14px; cursor: default; }
+  .pipe-row-label { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .pipe-row-label i { width: 9px; height: 9px; border-radius: 3px; background: var(--c); flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  .pipe-track { position: relative; height: 10px; border-radius: 99px; background: #EEF2F8; overflow: hidden; }
+  .pipe-fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--c) 82%, black), var(--c)); transition: width 1s cubic-bezier(.2,.8,.2,1); }
+  .pipe-row:hover .pipe-fill { filter: brightness(1.08); }
+  .pipe-row-val { display: flex; align-items: baseline; gap: 6px; justify-self: end; font-variant-numeric: tabular-nums; }
+  .pipe-row-val b { font-size: 13.5px; font-weight: 700; color: var(--text); }
+  .pipe-row-val span { font-size: 11.5px; font-weight: 600; color: var(--muted); min-width: 34px; text-align: right; }
+
+  /* Gráficos */
+  .chart-box { position: relative; height: 320px; }
+  .empty { display: grid; place-items: center; text-align: center; color: var(--muted); font-size: 13.5px; min-height: 180px; padding: 20px; }
+  .clickable-hint { font-size: 12px; color: var(--muted-2); }
+
+  /* Skeleton */
+  .skeleton .kpi-val, .skeleton .kpi-cap { color: transparent; border-radius: 8px; background: linear-gradient(90deg, #EEF2F8 25%, #F7F9FD 50%, #EEF2F8 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+  .skeleton .kpi-val { width: 60%; }
+  .skeleton .kpi-cap { width: 40%; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* Iframe */
+  .frame-loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 2; transition: opacity .25s; }
+  .frame-loading.done { opacity: 0; pointer-events: none; }
+  .frame-loading div { display: grid; justify-items: center; gap: 14px; color: var(--muted); font-size: 13.5px; }
+  .ring { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #DCE5F5; border-top-color: var(--blue); animation: spin .8s linear infinite; }
+  iframe.page { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #F3F6FB; }
+
+  /* Importação */
+  .drop {
+    border: 2px dashed #C3D2EC; border-radius: var(--r-lg); background: linear-gradient(180deg, #FAFCFF, #F3F7FE);
+    padding: 54px 24px; text-align: center; transition: border-color .2s, background .2s, transform .2s; cursor: pointer;
+  }
+  .drop:hover, .drop.over { border-color: var(--blue-2); background: #EEF5FF; }
+  .drop.over { transform: scale(1.005); }
+  .drop-ico { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 20px; display: grid; place-items: center; color: var(--blue); background: #E4EEFF; }
+  .drop-ico .ico { width: 30px; height: 30px; }
+  .drop h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; }
+  .drop p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+  .file-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .file-ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: var(--green); background: #E3F7EF; }
+  .file-meta { flex: 1; min-width: 200px; }
+  .file-meta b { display: block; font-size: 15px; }
+  .file-meta span { font-size: 13px; color: var(--muted); }
+  .field { display: grid; gap: 6px; }
+  .field label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .input, .select {
+    height: 42px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: #fff; width: 100%; font-size: 14px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .input:focus, .select:focus { outline: none; border-color: var(--blue-2); box-shadow: 0 0 0 4px rgba(59,130,246,.15); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+  .stat { padding: 14px 16px; border-radius: var(--r-md); background: #F5F8FD; }
+  .stat b { display: block; font-family: var(--font-display); font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+  .stat span { font-size: 12.5px; color: var(--muted); }
+  .table-scroll { overflow: auto; border: 1px solid var(--line); border-radius: var(--r-md); max-height: 320px; }
+  table.data { border-collapse: collapse; width: 100%; font-size: 13px; }
+  table.data th { position: sticky; top: 0; background: #F5F8FD; text-align: left; font-weight: 600; color: var(--muted); padding: 10px 14px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+  table.data td { padding: 10px 14px; border-bottom: 1px solid #F0F3F9; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+  table.data tr:last-child td { border-bottom: 0; }
+  .progress { height: 10px; border-radius: 99px; background: #E9EEF7; overflow: hidden; }
+  .progress i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #3B82F6, #10B981); transition: width .3s; }
+  .actions-row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 20px; }
+  .success-box { display: flex; gap: 14px; align-items: center; padding: 16px 18px; border-radius: var(--r-md); background: #E9F8F1; color: #0B6B49; margin-top: 18px; font-size: 14px; }
+
+  /* Usuários */
+  .users-tools { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .users-tools .input { max-width: 340px; }
+  .u-name { display: flex; align-items: center; gap: 12px; }
+  .u-name b { display: block; font-size: 14px; font-weight: 600; }
+  .u-name span { font-size: 12.5px; color: var(--muted); }
+  .badge { display: inline-flex; align-items: center; height: 26px; padding: 0 11px; border-radius: 99px; font-size: 12.5px; font-weight: 600; }
+  .badge.admin { background: #EAE6FF; color: #5B3FD1; }
+  .badge.coord { background: #E1F0FF; color: #1D5FC5; }
+  .badge.analista { background: #E2F7EE; color: #0B7A52; }
+  .badge.leitura { background: #EEF1F6; color: #55627A; }
+  .switch { position: relative; width: 42px; height: 24px; border-radius: 99px; background: #CBD5E4; transition: background .2s; flex: none; }
+  .switch::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.2); transition: transform .2s; }
+  .switch[aria-checked="true"] { background: var(--green); }
+  .switch[aria-checked="true"]::after { transform: translateX(18px); }
+  table.users { width: 100%; border-collapse: collapse; }
+  table.users th { text-align: left; font-size: 12.5px; color: var(--muted-2); font-weight: 600; padding: 0 20px 12px; }
+  table.users td { padding: 14px 20px; border-top: 1px solid #EEF2F8; vertical-align: middle; }
+  table.users tr:hover td { background: #FAFCFF; }
+  .row-actions { display: flex; justify-content: flex-end; gap: 2px; }
+
+  /* Dialog */
+  dialog { border: 0; border-radius: 22px; padding: 0; width: min(520px, calc(100vw - 32px)); box-shadow: var(--shadow-2); color: var(--text); background: #fff; }
+  dialog::backdrop { background: rgba(10,20,40,.5); backdrop-filter: blur(4px); }
+  dialog[open] { animation: pop .22s cubic-bezier(.2,.9,.3,1.2); }
+  @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+  .dlg-head { padding: 24px 26px 4px; }
+  .dlg-head h3 { font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+  .dlg-head p { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+  .dlg-body { padding: 18px 26px; display: grid; gap: 14px; max-height: 60vh; overflow: auto; }
+  .dlg-foot { padding: 16px 26px 24px; display: flex; justify-content: flex-end; gap: 10px; }
+  .check-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+  .check-row:hover { background: #F8FAFF; }
+  .check-row input { width: 18px; height: 18px; accent-color: var(--green); }
+  .check-row span { flex: 1; font-size: 14px; }
+  .check-row b { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* Toast */
+  .toasts { position: fixed; right: 24px; bottom: 24px; display: grid; gap: 10px; z-index: 100; }
+  .toast { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-radius: 14px; background: var(--ink); color: #fff; font-size: 13.5px; box-shadow: var(--shadow-2); animation: pop .25s ease; max-width: 380px; }
+  .toast.ok .ico { color: #34D399; }
+  .toast.warn .ico { color: #FBBF24; }
+  .toast.err .ico { color: #F87171; }
+
+  .scrim { display: none; }
+
+  /* ───────── Responsivo ───────── */
+  @media (max-width: 1280px) {
+    .g-top { grid-template-columns: 1fr; }
+    .kpi-hero { min-height: 150px; }
+  }
+  @media (max-width: 980px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar-w); transform: translateX(-102%); transition: transform .28s cubic-bezier(.2,.8,.2,1); }
+    .app.menu-open .sidebar { transform: none; }
+    .app.menu-open .scrim { display: block; position: fixed; inset: 0; background: rgba(10,20,40,.5); z-index: 25; }
+    .burger { display: inline-flex; }
+    .view { padding: 22px 18px 40px; }
+    .user-meta { display: none; }
+    .topbar { padding: 0 16px; }
+    .page-head h1 { font-size: 25px; }
+  }
+  @media (max-width: 680px) {
+    .g-charts { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+    table.users th:nth-child(3), table.users td:nth-child(3) { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body>
+<div class="app" id="app">
+
+  <!-- ═════════ MENU LATERAL ═════════ -->
+  <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="bSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F8BFF"/><stop offset="1" stop-color="#0E5FD8"/></linearGradient>
+          <linearGradient id="bField" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FD14F"/><stop offset="1" stop-color="#128A32"/></linearGradient>
+          <linearGradient id="bSoil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9A5A2B"/><stop offset="1" stop-color="#6E3C17"/></linearGradient>
+          <clipPath id="bClip"><rect width="64" height="64" rx="16"/></clipPath>
+        </defs>
+        <g clip-path="url(#bClip)">
+          <rect width="64" height="64" fill="url(#bSky)"/>
+          <circle cx="17" cy="16" r="8.5" fill="#FFC21A"/>
+          <circle cx="17" cy="16" r="11" fill="none" stroke="#fff" stroke-width="2.4" opacity=".9"/>
+          <path d="M-4 40C10 30 24 34 34 42L34 68-4 68Z" fill="url(#bSoil)"/>
+          <path d="M22 44C34 34 50 32 70 38L70 68 22 68Z" fill="url(#bField)"/>
+          <g stroke="#B8F56B" stroke-width="2.2" stroke-linecap="round" opacity=".85" fill="none">
+            <path d="M30 66C34 56 40 48 50 42"/><path d="M38 66C42 57 48 50 58 45"/><path d="M46 66C50 58 56 52 65 48"/>
+          </g>
+          <path d="M-6 36C8 26 22 30 33 39 22 34 8 31-6 40Z" fill="#fff" opacity=".95"/>
+          <path d="M20 46C33 35 50 33 70 39 50 36 34 39 22 49Z" fill="#fff" opacity=".95"/>
+        </g>
+        <rect x="1" y="1" width="62" height="62" rx="15.5" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="2"/>
+      </svg>
+      <div>
+        <div class="brand-name">PNCF Gestão</div>
+        <div class="brand-sub">Regularização fundiária</div>
+      </div>
+      <button class="rail-inline" id="btnRailInline" aria-label="Recolher menu" title="Recolher menu"><span class="ico" data-i="chevLeft"></span></button>
+    </div>
+
+    <nav>
+      <a class="nav-item" href="#dashboard" data-route="dashboard"><span class="ico" data-i="grid"></span>Dashboard</a>
+
+      <div class="nav-group">
+        <div class="nav-title">Projeto PNCF</div>
+        <a class="nav-item" href="#segmentada" data-route="segmentada"><span class="ico" data-i="layers"></span>Análise Segmentada</a>
+        <a class="nav-item" href="#minuta" data-route="minuta"><span class="ico" data-i="edit"></span>Minuta Ofício</a>
+        <a class="nav-item" href="#visualizador" data-route="visualizador"><span class="ico" data-i="search"></span>Visualizador de Processos</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Dados</div>
+        <a class="nav-item" href="#importar" data-route="importar"><span class="ico" data-i="upload"></span>Importar XLSX</a>
+      </div>
+    </nav>
+
+    <div class="nav-spacer"></div>
+    <div class="nav-foot">
+      <div class="nav-title">Configurações</div>
+      <a class="nav-item" href="#usuarios" data-route="usuarios"><span class="ico" data-i="users"></span>Gestão de Usuários</a>
+    </div>
+  </aside>
+  <button class="collapse-btn" id="btnRail" aria-label="Abrir menu" title="Abrir menu"><span class="ico" data-i="chevLeft"></span></button>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ═════════ ÁREA PRINCIPAL ═════════ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Abrir menu"><span class="ico" data-i="menu"></span></button>
+      <div class="crumb"><span>PNCF Gestão</span><span class="ico" data-i="chev"></span><b id="crumbTitle">Dashboard</b></div>
+      <div class="top-spacer"></div>
+      <div class="top-actions" id="topActions"></div>
+      <div class="user-chip">
+        <div class="user-meta"><b id="uName">Admin Master</b><span id="uRole">Administrador Global</span></div>
+        <div class="avatar" id="uAvatar">A</div>
+        <button class="btn btn-ghost btn-sm" id="btnLogout">Sair</button>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+
+      <!-- ─────────── DASHBOARD ─────────── -->
+      <section class="view active" id="view-dashboard">
+        <div class="page-head">
+          <div>
+            <h1>Indicadores de Desempenho</h1>
+            <p>Visão geral da distribuição de processos e produtividade dos analistas.</p>
+          </div>
+          <div class="head-tools">
+            <span class="chip-filter" id="chipFilter"><span id="chipFilterText"></span><button id="chipClear" aria-label="Remover filtro de grupo"><span class="ico" data-i="x"></span></button></span>
+            <span class="stamp" id="stamp"><i></i><span id="stampText">Aguardando dados</span></span>
+            <button class="btn btn-ghost" id="btnRefresh"><span class="ico" data-i="refresh"></span>Atualizar</button>
+          </div>
+        </div>
+
+        <div class="notice" id="notice"></div>
+
+        <div class="grid g-top">
+          <div class="grid" id="kpis"></div>
+
+          <div class="card card-pad pipe-card" id="pipeCard">
+            <div class="card-head">
+              <div><h3>Situação dos processos</h3><p>Distribuição por status na visão atual</p></div>
+            </div>
+            <div id="pipeBody"></div>
+          </div>
+        </div>
+
+        <div class="grid g-charts">
+          <div class="card card-pad">
+            <div class="card-head"><div><h3>Processos por Grupo</h3><p class="clickable-hint">Clique em uma barra para filtrar o painel</p></div></div>
+            <div class="chart-box" id="boxGrupo"><canvas id="chGrupo"></canvas></div>
+          </div>
+          <div class="card card-pad">
+            <div class="card-head"><div><h3>Processos por Estado</h3><p>Os 5 estados com mais processos</p></div></div>
+            <div class="chart-box" id="boxUf"><canvas id="chUf"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────── PÁGINAS EM IFRAME ─────────── -->
+      <section class="view frame" id="view-segmentada"></section>
+      <section class="view frame" id="view-minuta"></section>
+      <section class="view frame" id="view-visualizador"></section>
+
+      <!-- ─────────── IMPORTAR XLSX ─────────── -->
+      <section class="view" id="view-importar">
+        <div class="page-head">
+          <div>
+            <h1>Importar XLSX</h1>
+            <p>Envie uma planilha para atualizar a base de processos. Você confere as linhas antes de enviar.</p>
+          </div>
+        </div>
+        <div class="notice info show" style="margin-bottom:20px">
+          <span class="ico" data-i="alert"></span>
+          <div class="grow">O envio usa o endereço <b id="impEndpoint"></b> da API. Se o seu servidor usa outro caminho, ajuste <code>IMPORT_ENDPOINT</code> no início do script.</div>
+        </div>
+
+        <div id="impStep1">
+          <div class="drop" id="drop" tabindex="0" role="button" aria-label="Selecionar planilha">
+            <div class="drop-ico"><span class="ico" data-i="upload"></span></div>
+            <h3>Arraste a planilha aqui</h3>
+            <p>ou clique para escolher um arquivo .xlsx, .xls ou .csv</p>
+          </div>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+
+        <div class="card card-pad" id="impStep2" style="display:none">
+          <div class="file-row">
+            <div class="file-ico"><span class="ico" data-i="sheet"></span></div>
+            <div class="file-meta"><b id="impName"></b><span id="impSize"></span></div>
+            <div class="field" style="min-width:220px"><label for="impSheet">Aba da planilha</label><select class="select" id="impSheet"></select></div>
+            <button class="btn btn-ghost" id="impChange">Trocar arquivo</button>
+          </div>
+          <div class="stats">
+            <div class="stat"><b id="impRows">0</b><span>linhas encontradas</span></div>
+            <div class="stat"><b id="impCols">0</b><span>colunas</span></div>
+            <div class="stat"><b id="impBatches">0</b><span>lotes de envio</span></div>
+          </div>
+          <div class="card-head" style="margin-bottom:10px"><div><h3>Pré-visualização</h3><p>Primeiras linhas da aba selecionada</p></div></div>
+          <div class="table-scroll"><table class="data" id="impTable"></table></div>
+
+          <div id="impProgressBox" style="display:none;margin-top:22px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px"><span id="impProgressText">Enviando…</span><b id="impProgressPct">0%</b></div>
+            <div class="progress"><i id="impProgressBar"></i></div>
+          </div>
+          <div class="success-box" id="impDone" style="display:none"><span class="ico" data-i="check"></span><div id="impDoneText"></div></div>
+
+          <div class="actions-row">
+            <button class="btn btn-primary" id="impSend"><span class="ico" data-i="upload"></span>Enviar e atualizar dados</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────── GESTÃO DE USUÁRIOS ─────────── -->
+      <section class="view" id="view-usuarios">
+        <div class="page-head">
+          <div>
+            <h1>Gestão de Usuários</h1>
+            <p>Cadastre quem acessa o painel e defina o perfil de cada pessoa.</p>
+          </div>
+          <div class="head-tools"><button class="btn btn-primary" id="btnNewUser"><span class="ico" data-i="plus"></span>Novo usuário</button></div>
+        </div>
+        <div class="notice info show" style="margin-bottom:20px">
+          <span class="ico" data-i="alert"></span>
+          <div class="grow">Por enquanto os usuários ficam salvos apenas neste navegador. Para compartilhar com a equipe, ligue esta tela a uma API de usuários.</div>
+        </div>
+        <div class="users-tools"><input class="input" id="userSearch" type="search" placeholder="Buscar por nome ou e-mail"></div>
+        <div class="card" style="padding:22px 4px 8px;overflow:auto">
+          <table class="users">
+            <thead><tr><th>Usuário</th><th>Perfil</th><th>Acesso ativo</th><th></th></tr></thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Diálogo: usuário -->
+<dialog id="dlgUser">
+  <form method="dialog" id="formUser">
+    <div class="dlg-head"><h3 id="dlgUserTitle">Novo usuário</h3><p>Preencha os dados de acesso.</p></div>
+    <div class="dlg-body">
+      <div class="field"><label for="fNome">Nome completo</label><input class="input" id="fNome" required autocomplete="off"></div>
+      <div class="field"><label for="fEmail">E-mail</label><input class="input" id="fEmail" type="email" autocomplete="off"></div>
+      <div class="field"><label for="fPerfil">Perfil</label>
+        <select class="select" id="fPerfil">
+          <option value="admin">Administrador</option>
+          <option value="coord">Coordenador</option>
+          <option value="analista">Analista</option>
+          <option value="leitura">Somente leitura</option>
+        </select>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn btn-ghost" id="userCancel">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Salvar usuário</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   CONFIGURAÇÃO — ajuste aqui se algo mudar no seu ambiente
+   ════════════════════════════════════════════════════════════════ */
+const API_URL = 'http://18.217.219.60:8080/api';         // mesma API da Análise Segmentada
+const API_KEY = 'minha-chave-secreta-123';                // mesma chave da Análise Segmentada
+const IMPORT_ENDPOINT = '/importar-xlsx';                 // caminho da API que recebe a planilha (ajuste se for outro)
+const IMPORT_BATCH = 500;                                 // linhas por envio
+const CURRENT_USER_FALLBACK = { nome: 'Admin Master', cargo: 'Administrador Global' };
+const LOGIN_URL = '';                                     // se tiver tela de login, coloque o endereço aqui
+
+/* Páginas abertas dentro do painel (deixe os arquivos na mesma pasta deste) */
+const PAGES = {
+  segmentada:   { title: 'Análise Segmentada',        src: 'Analise_Segmentada.html' },
+  minuta:       { title: 'Minuta Ofício',             src: 'Minuta_Oficio.html' },
+  visualizador: { title: 'Visualizador de Processos', src: 'VisualizadorDeProcessos.html' }
+};
+const TITLES = {
+  dashboard: 'Dashboard', importar: 'Importar XLSX', usuarios: 'Gestão de Usuários',
+  segmentada: PAGES.segmentada.title, minuta: PAGES.minuta.title, visualizador: PAGES.visualizador.title
+};
+
+/* Status usados para montar o painel "Situação dos processos".
+   A ordem aqui define a ordem em que os segmentos aparecem. */
+const DEFAULT_STATUS = [
+  'Processo SEI',
+  'Análise Jurídica',
+  'Análise Técnica',
+  'Análise de Elegibilidade',
+  'Devolvido para ajustes',
+  'Reanálise'
+];
+
+/* ════════════════════════════════════════════════════════════════
+   UTILITÁRIOS
+   ════════════════════════════════════════════════════════════════ */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmtN = n => Number(n || 0).toLocaleString('pt-BR');
+const pct = (a, b) => b ? (a / b) * 100 : 0;
+const fmtPct = v => v.toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: v > 0 && v < 10 ? 1 : 0 }) + '%';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+const initials = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?';
+const uid = () => Math.random().toString(36).slice(2, 10);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+
+const UF_NOMES = { AC:'Acre', AL:'Alagoas', AP:'Amapá', AM:'Amazonas', BA:'Bahia', CE:'Ceará', DF:'Distrito Federal', ES:'Espírito Santo', GO:'Goiás', MA:'Maranhão', MT:'Mato Grosso', MS:'Mato Grosso do Sul', MG:'Minas Gerais', PA:'Pará', PB:'Paraíba', PR:'Paraná', PE:'Pernambuco', PI:'Piauí', RJ:'Rio de Janeiro', RN:'Rio Grande do Norte', RS:'Rio Grande do Sul', RO:'Rondônia', RR:'Roraima', SC:'Santa Catarina', SP:'São Paulo', SE:'Sergipe', TO:'Tocantins' };
+const ufLabel = u => UF_NOMES[String(u).toUpperCase()] || u;
+
+/* Ícones */
+const ICONS = {
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/>',
+  layers: '<path d="m12 3 9 4.6-9 4.6-9-4.6L12 3Z"/><path d="m3 12.2 9 4.6 9-4.6"/><path d="m3 16.8 9 4.6 9-4.6"/>',
+  edit: '<path d="M4 20h4L19.2 8.8a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="m14 7 3 3"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-3"/>',
+  users: '<circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.6-3.4 3.2-5.4 6.2-5.4s5.6 2 6.2 5.4"/><circle cx="17.4" cy="9" r="2.6"/><path d="M17 14.4c2.4.2 4 1.8 4.4 4.4"/>',
+  refresh: '<path d="M20 11a8 8 0 0 0-14.5-4M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4M20 20v-4h-4"/>',
+  external: '<path d="M14 4h6v6"/><path d="M20 4 10.5 13.5"/><path d="M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  trash: '<path d="M4 7h16M9 7V4.5h6V7M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12"/>',
+  x: '<path d="m6 6 12 12M18 6 6 18"/>',
+  chev: '<path d="m9 6 6 6-6 6"/>',
+  chevLeft: '<path d="m15 6-6 6 6 6"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  file: '<path d="M7.5 3H14l5 5v11.5A1.5 1.5 0 0 1 17.5 21h-10A1.5 1.5 0 0 1 6 19.5v-15A1.5 1.5 0 0 1 7.5 3Z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  ok: '<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16 9.6"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  analyst: '<circle cx="10" cy="8" r="3.6"/><path d="M3.5 20c.7-3.6 3.4-5.6 6.5-5.6s5.8 2 6.5 5.6"/><path d="m16.5 11.5 2 2 3.5-3.6"/>',
+  sheet: '<rect x="4" y="3.5" width="16" height="17" rx="2.2"/><path d="M4 9h16M4 14.5h16M10 9v11.5"/>',
+  alert: '<path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4.2M12 17.2h.01"/>'
+};
+const icon = n => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+function paintIcons(root = document) { $$('[data-i]', root).forEach(el => { if (!el.firstChild) el.innerHTML = icon(el.dataset.i); }); }
+
+function toast(msg, type = 'ok') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = `<span class="ico">${icon(type === 'ok' ? 'ok' : 'alert')}</span><span>${esc(msg)}</span>`;
+  $('#toasts').appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = 0; setTimeout(() => t.remove(), 320); }, 3800);
+}
+
+function countUp(el, to, dur = 900) {
+  const from = Number(el.dataset.v || 0);
+  el.dataset.v = to;
+  if (reduceMotion || from === to) { el.textContent = fmtN(to); return; }
+  const t0 = performance.now();
+  const step = t => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmtN(Math.round(from + (to - from) * e));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   API (mesmo padrão da Análise Segmentada)
+   ════════════════════════════════════════════════════════════════ */
+async function apiFetch(endpoint, options = {}) {
+  const headers = { 'Content-Type': 'application/json', 'x-api-key': API_KEY, ...(options.headers || {}) };
+  const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  try { return JSON.parse(txt); } catch { return txt; }
+}
+const asRows = d => Array.isArray(d) ? d : (d && Array.isArray(d.data) ? d.data : []);
+
+/* ════════════════════════════════════════════════════════════════
+   ESTADO DO DASHBOARD
+   ════════════════════════════════════════════════════════════════ */
+const CACHE_KEY = 'pncf_dash_cache_v1';
+const state = { rows: [], loading: false, error: null, failed: [], updatedAt: null, fromCache: false, filterGrupo: null, firstPaint: true };
+const charts = {};
+const PALETTE = ['#2563EB', '#0EA5E9', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
+
+const statusFiltered = rows => rows.filter(r => DEFAULT_STATUS.some(s => norm(s) === norm(r.status)));
+const scoped = () => {
+  const base = statusFiltered(state.rows);
+  return state.filterGrupo ? base.filter(r => r.grupo === state.filterGrupo) : base;
+};
+function tally(rows, fn) {
+  const m = new Map();
+  rows.forEach(r => { const k = fn(r); m.set(k, (m.get(k) || 0) + 1); });
+  return [...m.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), 'pt-BR'));
+}
+
+/* ── Carregamento (igual ao "Modo de Visualização" da Segmentada: percorre todos os grupos) ── */
+async function loadData() {
+  if (state.loading) return;
+  state.loading = true; state.error = null; state.failed = [];
+  setStamp('busy', 'Consultando a API…');
+  $('#btnRefresh').classList.add('spin');
+  renderDashboard();
+  try {
+    const grupos = asRows(await apiFetch('/grupos'));
+    if (!grupos.length) throw new Error('A API não devolveu nenhum grupo.');
+    const all = []; let done = 0;
+    const queue = [...grupos];
+    const worker = async () => {
+      while (queue.length) {
+        const g = queue.shift();
+        try {
+          const rows = asRows(await apiFetch('/segmentada', { method: 'POST', body: JSON.stringify({ idgrupo: g.id }) }));
+          rows.forEach(r => all.push({
+            grupo: String(r.grupo || g.nome || '').trim() || 'Sem grupo',
+            status: String(r.status || '').trim() || 'Sem status',
+            analista: String(r.analista || '').trim(),
+            uf: String(r.uf || '').trim(),
+            municipio: String(r.municipio || '').trim()
+          }));
+        } catch (e) { console.error('[PNCF] falha no grupo', g, e); state.failed.push(g.nome || g.id); }
+        done++;
+        setStamp('busy', `Carregando grupo ${done} de ${grupos.length}`);
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+    if (!all.length && state.failed.length) throw new Error('Nenhum grupo pôde ser carregado.');
+    state.rows = all; state.fromCache = false; state.updatedAt = Date.now();
+    store.set(CACHE_KEY, { ts: state.updatedAt, rows: all });
+  } catch (e) {
+    console.error('[PNCF] erro ao carregar', e);
+    state.error = e.message || String(e);
+  }
+  state.loading = false;
+  $('#btnRefresh').classList.remove('spin');
+  renderDashboard();
+}
+
+function setStamp(kind, text) {
+  const s = $('#stamp'); s.className = 'stamp ' + (kind || '');
+  $('#stampText').textContent = text;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RENDER DO DASHBOARD
+   ════════════════════════════════════════════════════════════════ */
+function renderDashboard() {
+  const rows = scoped();
+  const total = rows.length;
+  const analistas = new Set(rows.map(r => r.analista).filter(Boolean));
+  const nGrupos = new Set(rows.map(r => r.grupo)).size;
+
+  // Aviso e carimbo
+  const n = $('#notice');
+  const hasData = state.rows.length > 0;
+  if (state.error) {
+    n.className = 'notice show ' + (hasData ? 'warn' : 'err');
+    n.innerHTML = `<span class="ico">${icon('alert')}</span><div class="grow"><b>Não foi possível consultar a API.</b> ${esc(state.error)}. ${hasData ? 'Mostrando os últimos dados salvos neste navegador.' : 'Confira se o servidor está ligado e se o endereço está correto.'} <button class="link" id="noticeRetry">Tentar de novo</button></div>`;
+    $('#noticeRetry').onclick = loadData;
+    setStamp('off', hasData ? 'Dados salvos de ' + stampTime(state.updatedAt) : 'Sem conexão');
+  } else if (state.failed.length && !state.loading) {
+    n.className = 'notice show warn';
+    n.innerHTML = `<span class="ico">${icon('alert')}</span><div class="grow">Estes grupos não carregaram e ficaram de fora dos números: <b>${esc(state.failed.join(', '))}</b>. <button class="link" id="noticeRetry">Tentar de novo</button></div>`;
+    $('#noticeRetry').onclick = loadData;
+    setStamp('', 'Atualizado ' + stampTime(state.updatedAt));
+  } else {
+    n.className = 'notice';
+    if (!state.loading && state.updatedAt) setStamp('', (state.fromCache ? 'Dados salvos de ' : 'Atualizado ') + stampTime(state.updatedAt));
+  }
+
+  // Filtro por grupo
+  const chip = $('#chipFilter');
+  chip.classList.toggle('show', !!state.filterGrupo);
+  $('#chipFilterText').textContent = state.filterGrupo ? 'Grupo: ' + state.filterGrupo : '';
+
+  renderKpis({ total, nAnalistas: analistas.size, nGrupos });
+  renderPipeline(rows);
+  renderGrupoChart();
+  renderUfChart(rows);
+  state.firstPaint = false;
+}
+const stampTime = ts => {
+  if (!ts) return '';
+  const d = new Date(ts), hoje = new Date();
+  const hh = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return d.toDateString() === hoje.toDateString() ? 'às ' + hh : 'em ' + d.toLocaleDateString('pt-BR') + ' às ' + hh;
+};
+
+function renderKpis(k) {
+  const busyEmpty = state.loading && !state.rows.length;
+  const item = {
+    key: 'total', label: 'Total de processos', val: k.total, color: 'var(--blue)', ico: 'file',
+    cap: k.nGrupos ? `Distribuídos em ${fmtN(k.nGrupos)} ${k.nGrupos === 1 ? 'grupo' : 'grupos'}` : 'Nenhum grupo carregado'
+  };
+  const host = $('#kpis');
+  if (!host.children.length) {
+    host.innerHTML = `
+      <article class="card kpi kpi-hero" data-k="${item.key}" style="--kc:${item.color}">
+        <div class="kpi-top"><span class="kpi-label">${item.label}</span><span class="kpi-chip"><span class="ico">${icon(item.ico)}</span></span></div>
+        <div class="kpi-val" data-v="0">0</div>
+        <div class="kpi-cap"></div>
+      </article>`;
+  }
+  const el = $(`.kpi[data-k="${item.key}"]`);
+  el.classList.toggle('skeleton', busyEmpty);
+  countUp($('.kpi-val', el), item.val);
+  $('.kpi-cap', el).textContent = busyEmpty ? '' : item.cap;
+}
+
+function renderPipeline(rows) {
+  const body = $('#pipeBody');
+  if (!rows.length) { body.innerHTML = `<div class="empty">${state.loading ? 'Carregando processos…' : 'Sem processos para mostrar.'}</div>`; return; }
+  const total = rows.length;
+  const entries = DEFAULT_STATUS.map((s, i) => [s, rows.filter(r => norm(r.status) === norm(s)).length, PALETTE[i % PALETTE.length]]);
+  const outros = total - entries.reduce((a, [, c]) => a + c, 0);
+  if (outros > 0) entries.push(['Outros', outros, '#94A3B8']);
+  const sorted = entries.filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1]);
+  const max = sorted.length ? sorted[0][1] : 1;
+  body.innerHTML = `
+    <div class="pipe-total"><b>${fmtN(total)}</b><span>processos no total</span></div>
+    <div class="pipe-list">${sorted.map(([s, c, color]) => `
+      <div class="pipe-row" style="--c:${color}" title="${esc(s)}: ${fmtN(c)} (${fmtPct(pct(c, total))})">
+        <span class="pipe-row-label"><i></i>${esc(s)}</span>
+        <span class="pipe-track"><span class="pipe-fill" data-w="${pct(c, max)}"></span></span>
+        <span class="pipe-row-val"><b>${fmtN(c)}</b><span>${fmtPct(pct(c, total))}</span></span>
+      </div>`).join('')}</div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $$('.pipe-fill', body).forEach(el => { el.style.width = el.dataset.w + '%'; });
+  }));
+}
+
+/* ── Gráficos ── */
+const CH_FONT = "'Inter', system-ui, sans-serif";
+function grad(ctx, area, c1, c2, horizontal) {
+  const g = horizontal ? ctx.createLinearGradient(area.left, 0, area.right, 0) : ctx.createLinearGradient(0, area.bottom, 0, area.top);
+  g.addColorStop(0, c1); g.addColorStop(1, c2); return g;
+}
+const valueLabels = {
+  id: 'valueLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart, horiz = chart.options.indexAxis === 'y';
+    chart.getDatasetMeta(0).data.forEach((bar, i) => {
+      const v = chart.data.datasets[0].data[i];
+      ctx.save(); ctx.font = `700 12px ${CH_FONT}`; ctx.fillStyle = '#0F172A';
+      if (horiz) { ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(fmtN(v), bar.x + 8, bar.y); }
+      else { ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(fmtN(v), bar.x, bar.y - 6); }
+      ctx.restore();
+    });
+  }
+};
+const tooltip = {
+  backgroundColor: '#0F172A', padding: 12, cornerRadius: 12, titleFont: { family: CH_FONT, weight: '600', size: 13 },
+  bodyFont: { family: CH_FONT, size: 12.5 }, boxPadding: 5, displayColors: true
+};
+function mount(id, cfg) {
+  if (!window.Chart) return null;
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart($('#' + id), cfg);
+  return charts[id];
+}
+function chartEmpty(boxSel, canvasId, msg) {
+  const box = $(boxSel), has = $('.empty', box);
+  if (msg) {
+    if (charts[canvasId]) { charts[canvasId].destroy(); delete charts[canvasId]; }
+    $('#' + canvasId).style.display = 'none';
+    if (!has) box.insertAdjacentHTML('beforeend', `<div class="empty">${msg}</div>`);
+    else has.innerHTML = msg;
+    return true;
+  }
+  if (has) has.remove();
+  $('#' + canvasId).style.display = '';
+  return false;
+}
+const emptyMsg = () => state.loading ? 'Carregando processos…' : 'Sem dados para mostrar.';
+
+function renderGrupoChart() {
+  const t = tally(statusFiltered(state.rows), r => r.grupo).sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'pt-BR', { numeric: true }));
+  if (chartEmpty('#boxGrupo', 'chGrupo', t.length ? '' : emptyMsg())) return;
+  const labels = t.map(x => x[0]), data = t.map(x => x[1]);
+  const dim = l => state.filterGrupo && state.filterGrupo !== l;
+  mount('chGrupo', {
+    type: 'bar',
+    data: { labels, datasets: [{
+      data, borderRadius: 12, borderSkipped: false, maxBarThickness: 58,
+      backgroundColor: c => {
+        const { chart, dataIndex } = c, a = chart.chartArea; if (!a) return '#2563EB';
+        return dim(labels[dataIndex]) ? 'rgba(148,163,184,.35)' : grad(chart.ctx, a, '#2563EB', '#60A5FA');
+      }
+    }] },
+    plugins: [valueLabels],
+    options: {
+      responsive: true, maintainAspectRatio: false, layout: { padding: { top: 22 } },
+      animation: reduceMotion ? false : { duration: state.firstPaint ? 1000 : 500, easing: 'easeOutCubic' },
+      plugins: { legend: { display: false }, tooltip: { ...tooltip, callbacks: { label: c => ` ${fmtN(c.parsed.y)} processos` } } },
+      scales: {
+        x: { grid: { display: false }, border: { display: false }, ticks: { color: '#64748B', font: { family: CH_FONT, size: 12 } } },
+        y: { beginAtZero: true, border: { display: false }, grid: { color: '#EDF1F8' }, ticks: { color: '#94A3B8', font: { family: CH_FONT, size: 11 }, precision: 0, maxTicksLimit: 6 } }
+      },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      onClick: (e, els) => {
+        if (!els.length) return;
+        const g = labels[els[0].index];
+        state.filterGrupo = state.filterGrupo === g ? null : g;
+        renderDashboard();
+      }
+    }
+  });
+}
+
+function renderUfChart(rows) {
+  const t = tally(rows.filter(r => r.uf), r => r.uf).slice(0, 5);
+  if (chartEmpty('#boxUf', 'chUf', t.length ? '' : emptyMsg())) return;
+  const labels = t.map(x => ufLabel(x[0])), data = t.map(x => x[1]);
+  mount('chUf', {
+    type: 'bar',
+    data: { labels, datasets: [{
+      data, borderRadius: 12, borderSkipped: false, maxBarThickness: 64,
+      backgroundColor: c => { const a = c.chart.chartArea; return a ? grad(c.chart.ctx, a, '#059669', '#34D399') : '#10B981'; }
+    }] },
+    plugins: [valueLabels],
+    options: {
+      responsive: true, maintainAspectRatio: false, layout: { padding: { top: 22 } },
+      animation: reduceMotion ? false : { duration: state.firstPaint ? 1000 : 500, easing: 'easeOutCubic' },
+      plugins: { legend: { display: false }, tooltip: { ...tooltip, callbacks: { label: c => ` ${fmtN(c.parsed.y)} processos` } } },
+      scales: {
+        x: { grid: { display: false }, border: { display: false }, ticks: { color: '#334155', font: { family: CH_FONT, size: 13, weight: '500' } } },
+        y: { beginAtZero: true, border: { display: false }, grid: { color: '#EDF1F8' }, ticks: { color: '#94A3B8', font: { family: CH_FONT, size: 11 }, precision: 0, maxTicksLimit: 6 } }
+      }
+    }
+  });
+}
+
+$('#btnRefresh').onclick = loadData;
+$('#chipClear').onclick = () => { state.filterGrupo = null; renderDashboard(); };
+
+/* ════════════════════════════════════════════════════════════════
+   NAVEGAÇÃO
+   ════════════════════════════════════════════════════════════════ */
+const frames = {};
+function ensureFrame(route) {
+  if (frames[route]) return;
+  const host = $('#view-' + route), p = PAGES[route];
+  host.innerHTML = `<div class="frame-loading"><div><span class="ring"></span><span>Abrindo ${esc(p.title)}…</span></div></div><iframe class="page" title="${esc(p.title)}" src="${esc(p.src)}"></iframe>`;
+  const f = $('iframe', host), l = $('.frame-loading', host);
+  f.addEventListener('load', () => l.classList.add('done'));
+  frames[route] = f;
+}
+function renderTopActions(route) {
+  const box = $('#topActions');
+  if (!PAGES[route]) { box.innerHTML = ''; return; }
+  box.innerHTML = `
+    <button class="btn btn-ghost btn-sm" id="actReload"><span class="ico">${icon('refresh')}</span>Recarregar</button>
+    <a class="btn btn-ghost btn-sm" id="actOpen" href="${esc(PAGES[route].src)}" target="_blank" rel="noopener"><span class="ico">${icon('external')}</span>Abrir em nova aba</a>`;
+  $('#actReload').onclick = () => { const f = frames[route]; if (f) { $('.frame-loading', f.parentNode).classList.remove('done'); f.src = f.src; } };
+}
+function go(route) {
+  if (!TITLES[route]) route = 'dashboard';
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + route));
+  $$('.nav-item').forEach(a => a.getAttribute('data-route') === route ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  $('#crumbTitle').textContent = TITLES[route];
+  document.title = TITLES[route] + ' | PNCF Gestão';
+  $('#content').classList.toggle('flush', !!PAGES[route]);
+  if (PAGES[route]) ensureFrame(route);
+  renderTopActions(route);
+  if (route === 'usuarios') renderUsers();
+  $('#app').classList.remove('menu-open');
+  $('#content').scrollTop = 0;
+}
+window.addEventListener('hashchange', () => go(location.hash.slice(1)));
+(() => {
+  const app = $('#app'), btn = $('#btnRail'), btnInline = $('#btnRailInline');
+  const apply = v => {
+    app.classList.toggle('rail', v);
+    const [label, title] = v ? ['Expandir menu', 'Expandir menu'] : ['Recolher menu', 'Recolher menu'];
+    btn.setAttribute('aria-label', label); btn.title = title;
+    btnInline.setAttribute('aria-label', label); btnInline.title = title;
+  };
+  apply(store.get('pncf.rail', false) === true);
+  const toggle = () => { const v = !app.classList.contains('rail'); store.set('pncf.rail', v); apply(v); };
+  btn.onclick = toggle;
+  btnInline.onclick = toggle;
+})();
+
+$('#burger').onclick = () => $('#app').classList.toggle('menu-open');
+$('#scrim').onclick = () => $('#app').classList.remove('menu-open');
+
+/* ════════════════════════════════════════════════════════════════
+   IMPORTAR XLSX
+   ════════════════════════════════════════════════════════════════ */
+$('#impEndpoint').textContent = API_URL + IMPORT_ENDPOINT;
+const imp = { wb: null, file: null, rows: [], sending: false };
+const drop = $('#drop'), fileInput = $('#fileInput');
+drop.onclick = () => fileInput.click();
+drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } };
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+fileInput.onchange = () => { if (fileInput.files[0]) readFile(fileInput.files[0]); fileInput.value = ''; };
+$('#impChange').onclick = () => { if (imp.sending) return; $('#impStep2').style.display = 'none'; $('#impStep1').style.display = ''; };
+
+function readFile(file) {
+  if (!window.XLSX) { toast('A biblioteca de planilhas ainda está carregando. Tente de novo em instantes.', 'warn'); return; }
+  if (!/\.(xlsx|xls|csv)$/i.test(file.name)) { toast('Use um arquivo .xlsx, .xls ou .csv.', 'err'); return; }
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      imp.wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      imp.file = file;
+      $('#impName').textContent = file.name;
+      $('#impSize').textContent = (file.size / 1024 < 1024 ? Math.round(file.size / 1024) + ' KB' : (file.size / 1048576).toFixed(1).replace('.', ',') + ' MB');
+      $('#impSheet').innerHTML = imp.wb.SheetNames.map(n => `<option>${esc(n)}</option>`).join('');
+      $('#impStep1').style.display = 'none'; $('#impStep2').style.display = '';
+      $('#impDone').style.display = 'none'; $('#impProgressBox').style.display = 'none';
+      pickSheet();
+    } catch (err) { console.error(err); toast('Não consegui ler esse arquivo. Confira se ele não está corrompido.', 'err'); }
+  };
+  r.readAsArrayBuffer(file);
+}
+function pickSheet() {
+  const ws = imp.wb.Sheets[$('#impSheet').value];
+  imp.rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false });
+  const cols = imp.rows.length ? Object.keys(imp.rows[0]) : [];
+  $('#impRows').textContent = fmtN(imp.rows.length);
+  $('#impCols').textContent = fmtN(cols.length);
+  $('#impBatches').textContent = fmtN(Math.ceil(imp.rows.length / IMPORT_BATCH));
+  $('#impTable').innerHTML = imp.rows.length
+    ? `<thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${imp.rows.slice(0, 8).map(r => `<tr>${cols.map(c => `<td>${esc(r[c])}</td>`).join('')}</tr>`).join('')}</tbody>`
+    : '<tbody><tr><td>Esta aba não tem linhas.</td></tr></tbody>';
+  $('#impSend').disabled = !imp.rows.length;
+}
+$('#impSheet').onchange = pickSheet;
+
+$('#impSend').onclick = async () => {
+  if (imp.sending || !imp.rows.length) return;
+  imp.sending = true;
+  const btn = $('#impSend'); btn.disabled = true; btn.classList.add('spin');
+  $('#impDone').style.display = 'none'; $('#impProgressBox').style.display = '';
+  const total = Math.ceil(imp.rows.length / IMPORT_BATCH), sheet = $('#impSheet').value;
+  try {
+    for (let i = 0; i < total; i++) {
+      const linhas = imp.rows.slice(i * IMPORT_BATCH, (i + 1) * IMPORT_BATCH);
+      await apiFetch(IMPORT_ENDPOINT, { method: 'POST', body: JSON.stringify({ arquivo: imp.file.name, aba: sheet, lote: i + 1, totalLotes: total, linhas }) });
+      const p = Math.round(((i + 1) / total) * 100);
+      $('#impProgressBar').style.width = p + '%'; $('#impProgressPct').textContent = p + '%';
+      $('#impProgressText').textContent = `Enviando lote ${i + 1} de ${total}`;
+    }
+    $('#impDoneText').innerHTML = `<b>Importação concluída.</b> ${fmtN(imp.rows.length)} linhas de “${esc(sheet)}” foram enviadas. O dashboard está sendo atualizado.`;
+    $('#impDone').style.display = 'flex';
+    toast('Planilha importada com sucesso.');
+    loadData();
+  } catch (e) {
+    console.error(e);
+    toast(`O envio falhou (${e.message}). Confira o endereço ${IMPORT_ENDPOINT} e tente de novo.`, 'err');
+  }
+  imp.sending = false; btn.disabled = false; btn.classList.remove('spin');
+};
+
+/* ════════════════════════════════════════════════════════════════
+   GESTÃO DE USUÁRIOS
+   ════════════════════════════════════════════════════════════════ */
+const USERS_KEY = 'pncf_users_v1';
+const PERFIS = { admin: 'Administrador', coord: 'Coordenador', analista: 'Analista', leitura: 'Somente leitura' };
+let users = (() => {
+  const v = store.get(USERS_KEY);
+  return Array.isArray(v) && v.length ? v : [{ id: uid(), nome: CURRENT_USER_FALLBACK.nome, email: '', perfil: 'admin', ativo: true, master: true }];
+})();
+const saveUsers = () => store.set(USERS_KEY, users);
+let editingId = null;
+
+function renderUsers() {
+  const q = norm($('#userSearch').value);
+  const list = users.filter(u => !q || norm(u.nome).includes(q) || norm(u.email).includes(q));
+  $('#usersBody').innerHTML = list.length ? list.map(u => `
+    <tr>
+      <td><div class="u-name"><div class="avatar" style="width:40px;height:40px;background:${u.master ? '' : 'linear-gradient(135deg,#3B82F6,#2563EB)'}">${esc(initials(u.nome))}</div><div><b>${esc(u.nome)}</b><span>${esc(u.email || 'Sem e-mail')}</span></div></div></td>
+      <td><span class="badge ${u.perfil}">${u.master ? 'Administrador Global' : PERFIS[u.perfil]}</span></td>
+      <td><button class="switch" role="switch" aria-checked="${u.ativo}" aria-label="Acesso de ${esc(u.nome)}" data-act="toggle" data-id="${u.id}" ${u.master ? 'disabled style="opacity:.55;cursor:not-allowed"' : ''}></button></td>
+      <td><div class="row-actions">
+        <button class="btn btn-icon" data-act="edit" data-id="${u.id}" title="Editar" aria-label="Editar ${esc(u.nome)}"><span class="ico">${icon('edit')}</span></button>
+        ${u.master ? '' : `<button class="btn btn-icon danger" data-act="del" data-id="${u.id}" title="Excluir" aria-label="Excluir ${esc(u.nome)}"><span class="ico">${icon('trash')}</span></button>`}
+      </div></td>
+    </tr>`).join('') : `<tr><td colspan="4"><div class="empty">Nenhum usuário encontrado.</div></td></tr>`;
+  const me = users.find(u => u.master) || users[0];
+  $('#uName').textContent = me.nome; $('#uRole').textContent = me.master ? 'Administrador Global' : PERFIS[me.perfil];
+  $('#uAvatar').textContent = initials(me.nome).slice(0, 1);
+}
+$('#userSearch').oninput = renderUsers;
+$('#usersBody').onclick = e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const u = users.find(x => x.id === b.dataset.id); if (!u) return;
+  if (b.dataset.act === 'toggle' && !u.master) { u.ativo = !u.ativo; saveUsers(); renderUsers(); toast(u.ativo ? `Acesso de ${u.nome} liberado.` : `Acesso de ${u.nome} bloqueado.`); }
+  if (b.dataset.act === 'edit') openUserDialog(u);
+  if (b.dataset.act === 'del' && confirm(`Excluir o usuário ${u.nome}? Essa ação não pode ser desfeita.`)) { users = users.filter(x => x.id !== u.id); saveUsers(); renderUsers(); toast('Usuário excluído.'); }
+};
+function openUserDialog(u) {
+  editingId = u ? u.id : null;
+  $('#dlgUserTitle').textContent = u ? 'Editar usuário' : 'Novo usuário';
+  $('#fNome').value = u ? u.nome : ''; $('#fEmail').value = u ? u.email : ''; $('#fPerfil').value = u ? u.perfil : 'analista';
+  $('#fPerfil').disabled = !!(u && u.master);
+  $('#dlgUser').showModal(); setTimeout(() => $('#fNome').focus(), 30);
+}
+$('#btnNewUser').onclick = () => openUserDialog(null);
+$('#userCancel').onclick = () => $('#dlgUser').close();
+$('#formUser').addEventListener('submit', e => {
+  const nome = $('#fNome').value.trim(); if (!nome) { e.preventDefault(); return; }
+  const data = { nome, email: $('#fEmail').value.trim(), perfil: $('#fPerfil').value };
+  if (editingId) Object.assign(users.find(x => x.id === editingId), data);
+  else users.push({ id: uid(), ativo: true, ...data });
+  saveUsers(); renderUsers(); toast(editingId ? 'Usuário atualizado.' : 'Usuário cadastrado.');
+});
+
+$('#btnLogout').onclick = () => {
+  if (!confirm('Deseja sair do painel?')) return;
+  store.del('pncf_session');
+  if (LOGIN_URL) location.href = LOGIN_URL; else location.reload();
+};
+
+/* ════════════════════════════════════════════════════════════════
+   INÍCIO
+   ════════════════════════════════════════════════════════════════ */
+paintIcons();
+renderUsers();
+window.addEventListener('DOMContentLoaded', () => {
+  go(location.hash.slice(1) || 'dashboard');
+  // mostra o último resultado salvo na hora e atualiza em seguida
+  const c = store.get(CACHE_KEY);
+  if (c && Array.isArray(c.rows) && c.rows.length) { state.rows = c.rows; state.updatedAt = c.ts; state.fromCache = true; }
+  renderDashboard();
+  loadData();
+});
+</script>
+</body>
+</html>

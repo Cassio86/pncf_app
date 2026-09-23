@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNCF - Consulta de Processos</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #334155;
+            --muted: #64748b;
+            --accent-blue: #0284c7;
+            --accent-green: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .wrap {
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0 0 10px 0;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p {
+            margin: 0 0 20px 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        button:hover:not(:disabled) {
+            filter: brightness(0.95);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Checkbox modificado para a action bar */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            margin-left: 10px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+
+        .checkbox-container:hover {
+            border-color: var(--accent-blue);
+            background: #f0f9ff;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            background: #f1f5f9;
+        }
+
+        .status.ok {
+            border-color: #86efac;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .status.err {
+            border-color: #fca5a5;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .table-container {
+            margin-top: 25px;
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            max-width: 95%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        table {
+            width: auto;
+            min-width: 800px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+        }
+
+        thead th {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ccc;
+            color: var(--text);
+            font-weight: 600;
+            white-space: normal;
+        }
+
+        tbody td,
+        tfoot td {
+            padding: 12px;
+            border: 1px solid #ccc;
+        }
+
+        tbody tr:hover {
+            background: #f0f9ff;
+        }
+
+        .pill {
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: var(--border);
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(2, 132, 199, 0.1);
+            border: 1px solid rgba(2, 132, 199, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent-blue);
+        }
+
+        .col-group {
+            white-space: normal;
+            line-height: 1.5;
+            min-width: 220px;
+        }
+
+        .linha-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            margin-bottom: 2px;
+        }
+
+        .linha-item .label {
+            font-weight: 600;
+            flex-shrink: 0;
+            color: var(--text);
+        }
+
+        .linha-item .valor {
+            flex-shrink: 0;
+            color: var(--text);
+        }
+
+        td.col-codigo {
+            color: var(--accent-blue);
+        }
+
+        td.col-money {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        td.col-total {
+            font-weight: bold;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            animation: toastIn 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.error {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        .toast.success {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <div class="card">
+            <h1>Consulta de Processos <span class="pill" id="pill">Online</span></h1>
+            <p>PNCF — Elaboração de Minutas de Ofício (V7.2)</p>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                <label for="searchInput">Código do Processo</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="searchInput" placeholder="Ex: 6.108.988, 6.108.900, 6.107.836 ...">
+                    <button id="btnBuscar" class="btn-success" onclick="buscarDados()">Buscar</button>
+                </div>
+                <div id="searchTags" class="search-tags"></div>
+            </div>
+
+            <div class="actions">
+                <button id="btnCopiar" class="btn-success" onclick="copiarTabela()" disabled>Copiar
+                    (Colar SEI)</button>
+                <button id="btnExportar" class="btn-success" onclick="exportarExcel()" disabled>Exportar para
+                    Excel</button>
+                <button id="btnClear" class="btn-outline" disabled>Limpar Tudo</button>
+
+                <!-- NOVO CHECKBOX ADICIONADO AQUI -->
+                <label class="checkbox-container">
+                    <input type="checkbox" id="chkModeloAlternativo" style="width: 16px; height: 16px;">
+                    Modelo de Pendências
+                </label>
+            </div>
+
+            <div id="status" class="status">Insira os códigos e clique em Buscar.</div>
+
+            <div class="table-container" id="tableWrap" style="display:none;">
+                <div id="tableArea"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==============================================================================
+        // CONFIGURAÇÕES DO POSTGRESQL (VIA API)
+        // Substitua a URL abaixo pelo endereço do seu servidor/backend que fará a consulta
+        // ==============================================================================
+        const API_URL = 'http://18.217.219.60:8080/api/minuta';
+        const TABELA = 'vwminuta';
+        const COLUNA_FILTRO = 'PROCESSO';
+
+        const COLUNAS = [
+            { key: 'PROCESSO', label: 'Código', type: 'codigo' },
+            { key: 'PROPONENTE', label: 'Proponente', type: 'proponente' },
+            { key: 'CONJUGE', label: 'Cônjuge', type: 'conjuge' },
+            { key: 'LINHA DE FINANCIAMENTO', label: 'Linha de<br>Financiamento', type: 'text' },
+            { key: 'SAT', label: 'SAT', type: 'money' },
+            { key: 'SIB', label: 'SIB', type: 'money' },
+            { key: 'PROJETO', label: 'ATER', type: 'projeto_ater' },
+            { key: 'DESP. ACESS.', label: 'DESP. ACESS.', type: 'desp_acess' },
+            { key: 'ADICIONAIS', label: 'ADICIONAIS', type: 'adicionais' },
+            { key: 'TOTAL', label: 'TOTAL', type: 'money' },
+        ];
+        const searchInput = document.getElementById('searchInput');
+        const searchTags = document.getElementById('searchTags');
+        const tableArea = document.getElementById('tableArea');
+        const tableWrap = document.getElementById('tableWrap');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnCopiar = document.getElementById('btnCopiar');
+        const btnExportar = document.getElementById('btnExportar');
+        const btnClear = document.getElementById('btnClear');
+        const statusEl = document.getElementById('status');
+        const pillEl = document.getElementById('pill');
+        const chkModeloAlternativo = document.getElementById('chkModeloAlternativo'); // Referência ao checkbox
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') buscarDados();
+        });
+
+        function extrairCodigos(texto) {
+            return texto
+                .split(/[\s,;|]+/)
+                .map(c => c.trim().replace(/\./g, ''))
+                .filter(c => c.length > 0);
+        }
+
+        function renderTags(codigos) {
+            searchTags.innerHTML = codigos.map(c =>
+                `<span class="tag">🔎 ${c}</span>`
+            ).join('');
+        }
+
+        function setStatus(msg, type = "") {
+            statusEl.textContent = msg;
+            statusEl.className = "status " + (type || "");
+        }
+
+        function setPill(text, active = false) {
+            pillEl.textContent = text;
+            pillEl.style.background = active ? "var(--accent-green)" : "var(--border)";
+            pillEl.style.color = active ? "white" : "var(--muted)";
+        }
+
+        function updateUI() {
+            const hasData = window.ultimosDados && window.ultimosDados.length > 0;
+            btnCopiar.disabled = !hasData;
+            btnExportar.disabled = !hasData;
+            btnClear.disabled = !hasData;
+            tableWrap.style.display = hasData ? 'block' : 'none';
+        }
+
+        function showToast(msg, type = 'error') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'error' ? '⚠️' : '✅';
+            if (type === 'info') icon = '📋';
+
+            toast.innerHTML = `${icon} ${msg}`;
+
+            if (type === 'info') {
+                toast.style.background = '#e6fffa';
+                toast.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                toast.style.color = '#059669';
+            }
+
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function parseNumericValue(val) {
+            if (val == null || val === '' || val === 'X' || val === 'x') return null;
+            let clean = String(val).replace(/[^\d.,-]/g, '').trim();
+            if (clean === '') return null;
+
+            if (clean.includes(',')) {
+                clean = clean.replace(/\./g, '').replace(',', '.');
+            }
+
+            const num = parseFloat(clean);
+            return isNaN(num) ? null : num;
+        }
+
+        function formatMoney(val) {
+            const num = parseNumericValue(val);
+            if (num == null) return "R$ 0,00";
+            return "R$ " + num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatSubMoney(val) {
+            const num = parseNumericValue(val);
+            if (num == null) return "R$ 0,00";
+            return "R$ " + num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function renderTable(dados) {
+            if (!dados || dados.length === 0) {
+                tableArea.innerHTML = `
+                    <div class="status err" style="margin-top: 0;">
+                        Nenhum resultado encontrado. Os códigos informados não retornaram dados. Verifique se estão corretos e tente novamente.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+            for (const col of COLUNAS) {
+                const cls = col.type === 'money' ? ' class="col-money"' : '';
+                html += `<th${cls}>${col.label}</th>`;
+            }
+            html += '</tr></thead><tbody>';
+
+            let somaTotalGeral = 0;
+
+            for (const row of dados) {
+                html += '<tr>';
+                for (const col of COLUNAS) {
+                    let val = row[col.key];
+
+                    if (col.key === 'TOTAL') {
+                        let total = 0;
+                        const keysToSum = [
+                            'SAT', 'SIB', 'ELAB. PROJETO', 'SERV. ATER',
+                            'ITBI', 'GEO', 'CARTORIO',
+                            'CAPAC. INICIAL', 'LAUDO AVALIACAO', 'PRODUCAO', 'PAA OU PNAE', 'PRONAF-A'
+                        ];
+                        for (const key of keysToSum) {
+                            const v = row[key];
+                            const num = parseNumericValue(v);
+                            if (num != null) total += num;
+                        }
+                        val = total;
+                        somaTotalGeral += total;
+                        row['TOTAL'] = total;
+                    }
+
+                    if (col.type === 'codigo') {
+                        html += `<td class="col-codigo">${val ?? '—'}</td>`;
+                    } else if (col.type === 'money') {
+                        const cls = col.key === 'TOTAL' ? ' class="col-money col-total"' : ' class="col-money"';
+                        html += `<td${cls}>${formatMoney(val)}</td>`;
+                    } else if (col.type === 'proponente') {
+                        const cellVal = `
+                            <div class="linha-item">
+                                <span class="label">NOME:</span>
+                                <span class="valor">${row['BENEFICIARIO'] ?? ''}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">CPF:</span>
+                                <span class="valor">${row['CPF'] ?? ''}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">EST. CIVIL:</span>
+                                <span class="valor">${row['ESTADO CIVIL'] ?? ''}</span>
+                            </div>
+                        `;
+                        html += `<td class="col-group">${cellVal}</td>`;
+                    } else if (col.type === 'conjuge') {
+                        const cellVal = `
+                            <div class="linha-item">
+                                <span class="label">NOME:</span>
+                                <span class="valor">${row['NOME CONJUGE'] ?? ''}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">CPF:</span>
+                                <span class="valor">${row['CPF CONJUGE'] ?? ''}</span>
+                            </div>
+                        `;
+                        html += `<td class="col-group">${cellVal}</td>`;
+                    } else if (col.type === 'projeto_ater') {
+                        const cellVal = `
+                            <div class="linha-item">
+                                <span class="label">PROJETO:</span>
+                                <span class="valor">${formatSubMoney(row['ELAB. PROJETO'])}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">SERV. ATER:</span>
+                                <span class="valor">${formatSubMoney(row['SERV. ATER'])}</span>
+                            </div>
+                        `;
+                        html += `<td class="col-group">${cellVal}</td>`;
+                    } else if (col.type === 'desp_acess') {
+                        const cellVal = `
+                            <div class="linha-item">
+                                <span class="label">ITBI:</span>
+                                <span class="valor">${formatSubMoney(row['ITBI'])}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">MEDIÇÃO:</span>
+                                <span class="valor">${formatSubMoney(row['GEO'])}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">CARTÓRIO:</span>
+                                <span class="valor">${formatSubMoney(row['CARTORIO'])}</span>
+                            </div>
+                        `;
+                        html += `<td class="col-group">${cellVal}</td>`;
+                    } else if (col.type === 'adicionais') {
+                        const cellVal = `
+                            <div class="linha-item">
+                                <span class="label">CAPACITAÇÃO:</span>
+                                <span class="valor">${formatSubMoney(row['CAPAC. INICIAL'])}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">LAUDO:</span>
+                                <span class="valor">${formatSubMoney(row['LAUDO AVALIACAO'])}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">PRODUÇÃO:</span>
+                                <span class="valor">${formatSubMoney(row['PRODUCAO'])}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">PAA ou PNAE:</span>
+                                <span class="valor">${formatSubMoney(row['PAA OU PNAE'])}</span>
+                            </div>
+                            <div class="linha-item">
+                                <span class="label">PRONAF-A:</span>
+                                <span class="valor">${formatSubMoney(row['PRONAF-A'])}</span>
+                            </div>
+                        `;
+                        html += `<td class="col-group">${cellVal}</td>`;
+                    } else {
+                        html += `<td style="white-space: nowrap;">${val ?? '—'}</td>`;
+                    }
+                }
+                html += '</tr>';
+            }
+
+            html += `
+                <tr class="total-row" style="font-weight: bold; background-color: var(--bg);">
+                    <td colspan="4" style="text-align: left; border: 1px solid #ccc; padding-left: 12px; color: var(--accent-blue);">Qtd de Processos: ${dados.length}</td>
+                    <td colspan="5" style="text-align: right; border: 1px solid #ccc; padding-right: 12px;">Total Geral:</td>
+                    <td class="col-money col-total" style="border: 1px solid #ccc;">${formatMoney(somaTotalGeral)}</td>
+                </tr>
+            `;
+
+            html += '</tbody></table>';
+            tableArea.innerHTML = html;
+        }
+
+        // ==================================================================
+        // NOVA FUNÇÃO: COPIAR TABELA DE PENDÊNCIAS
+        // ==================================================================
+        function copiarTabelaPendencias() {
+            if (!window.ultimosDados || window.ultimosDados.length === 0) return;
+
+            // Criamos a tabela de forma virtual, exatamente com a estrutura pedida
+            const table = document.createElement('table');
+            table.setAttribute('border', '1');
+            table.setAttribute('bordercolor', '#000000'); // Força a cor no HTML legado
+            table.setAttribute('cellspacing', '0');
+            table.setAttribute('cellpadding', '6');
+            table.style.width = '90%';
+            table.style.margin = '0 auto';
+            table.style.borderCollapse = 'collapse';
+            table.style.fontFamily = 'Arial, sans-serif';
+            table.style.fontSize = '11px';
+            table.style.border = '1px solid black'; // Borda preta para o PDF não apagar
+
+            // Cabeçalho
+            const thead = document.createElement('thead');
+            const trHead = document.createElement('tr');
+            const headers = ['PROCESSO', 'PROPONENTE', 'CPF', 'PENDÊNCIAS'];
+            headers.forEach(h => {
+                const th = document.createElement('th');
+                th.innerText = h;
+                th.style.backgroundColor = '#f8fafc';
+                th.style.color = '#334155';
+                th.style.fontWeight = 'bold';
+                th.style.padding = '8px 12px';
+                th.style.border = '1px solid black'; // Borda preta
+                th.style.fontSize = '12px';
+                th.style.textAlign = 'left';
+                trHead.appendChild(th);
+            });
+            thead.appendChild(trHead);
+            table.appendChild(thead);
+
+            // Corpo da Tabela
+            const tbody = document.createElement('tbody');
+            window.ultimosDados.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                if (index % 2 === 1) {
+                    tr.style.backgroundColor = '#f8fafc';
+                }
+
+                // Ajuste no estilo base para bordas pretas
+                const styleBaseCell = "padding: 12px; border: 1px solid black; font-size: 11px; vertical-align: top; color: #334155;";
+
+                // Coluna: PROCESSO
+                const tdProcesso = document.createElement('td');
+                tdProcesso.innerText = row['PROCESSO'] || '';
+                tdProcesso.style.cssText = styleBaseCell + " color: #0284c7; font-weight: bold;";
+
+                // Coluna: PROPONENTE
+                const tdProponente = document.createElement('td');
+                tdProponente.innerText = row['BENEFICIARIO'] || '';
+                tdProponente.style.cssText = styleBaseCell;
+
+                // Coluna: CPF
+                const tdCpf = document.createElement('td');
+                tdCpf.innerText = row['CPF'] || '';
+                tdCpf.style.cssText = styleBaseCell;
+
+                // Coluna: PENDÊNCIAS (Modelo livre)
+                const tdPendencias = document.createElement('td');
+                tdPendencias.style.cssText = styleBaseCell;
+                // Template de texto com as quebras de linha para simular o layout da imagem
+                tdPendencias.innerHTML = `<strong>ANÁLISE PROJETO PRODUTIVO</strong><br><br><br><br><br><strong>ANÁLISE DE ELEGIBILIDADE</strong>`;
+
+                tr.appendChild(tdProcesso);
+                tr.appendChild(tdProponente);
+                tr.appendChild(tdCpf);
+                tr.appendChild(tdPendencias);
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            // Função helper para copiar o elemento pra área de transferência
+            executarCopiaClipboard(table, 'Modelo de Pendências copiado (Pronto para o SEI)!');
+        }
+
+        // ==================================================================
+        // COPIAR TABELA (Ajustado para redirecionar se o checkbox estiver ativo)
+        // ==================================================================
+        function copiarTabela() {
+            // VERIFICA SE O CHECKBOX ESTÁ MARCADO
+            if (chkModeloAlternativo.checked) {
+                copiarTabelaPendencias();
+                return;
+            }
+
+            // SE NÃO ESTIVER MARCADO, SEGUE COM O CÓDIGO NORMAL DA TABELA GERAL
+            const tableEl = tableArea.querySelector('table');
+            if (!tableEl) return;
+
+            const clone = tableEl.cloneNode(true);
+
+            clone.setAttribute('border', '1');
+            clone.setAttribute('bordercolor', '#000000');
+            clone.setAttribute('cellspacing', '0');
+            clone.setAttribute('cellpadding', '2'); // Diminuído para encolher a tabela
+
+            clone.style.width = '100%';
+            clone.style.margin = '0 auto';
+            clone.style.borderCollapse = 'collapse';
+            clone.style.fontFamily = 'Arial, sans-serif';
+            clone.style.fontSize = '9px'; // Fonte base ligeiramente menor
+            clone.style.border = '1px solid black';
+            clone.style.tableLayout = 'auto';
+
+            clone.querySelectorAll('th').forEach(th => {
+                th.style.backgroundColor = '#f8fafc';
+                th.style.color = '#334155';
+                th.style.fontWeight = 'bold';
+                th.style.padding = '2px 4px'; // Redução do padding para economizar espaço
+                th.style.border = '1px solid black';
+                th.style.fontSize = '9px'; // Fonte do cabeçalho reduzida
+                th.style.textAlign = th.classList.contains('col-money') ? 'right' : 'left';
+                th.style.whiteSpace = 'normal';
+            });
+
+            clone.querySelectorAll('td').forEach(td => {
+                td.style.padding = '2px 4px'; // Redução do padding
+                td.style.border = '1px solid black';
+                td.style.fontSize = '9px'; // Fonte da célula reduzida
+                td.style.verticalAlign = 'top';
+                td.style.color = '#334155';
+
+                if (td.classList.contains('col-money')) {
+                    td.style.textAlign = 'right';
+                    td.style.whiteSpace = 'nowrap';
+                }
+                if (td.classList.contains('col-codigo')) {
+                    td.style.color = '#0284c7';
+                    td.style.fontWeight = 'bold';
+                    td.style.whiteSpace = 'nowrap';
+                }
+            });
+
+            clone.querySelectorAll('tbody tr').forEach((tr, index) => {
+                if (index % 2 === 1) {
+                    tr.querySelectorAll('td').forEach(td => {
+                        td.style.backgroundColor = '#f8fafc';
+                    });
+                }
+            });
+
+            clone.querySelectorAll('.total-row td').forEach(td => {
+                td.style.fontWeight = 'bold';
+                td.style.backgroundColor = '#e2e8f0';
+                td.style.border = '1px solid black';
+            });
+
+            clone.querySelectorAll('.col-group').forEach(el => {
+                el.style.minWidth = 'auto';
+            });
+
+            clone.querySelectorAll('.linha-item').forEach(el => {
+                el.style.display = 'block';
+                el.style.marginBottom = '2px';
+
+                // === AQUI ESTÁ A CORREÇÃO PRINCIPAL PARA NÃO CORTAR AS PALAVRAS ===
+                el.style.whiteSpace = 'nowrap'; // Força o texto "LABEL: R$ Valor" a ficar na mesma linha
+                el.style.wordBreak = 'normal';  // Impede que a palavra seja rasgada ao meio (ex: MEDIÇÃ / O)
+                el.style.fontSize = '8.5px';    // Fonte ajustada para caber elegantemente
+            });
+
+            clone.querySelectorAll('.label').forEach(el => {
+                el.style.fontWeight = 'bold';
+                el.style.color = '#334155';
+            });
+
+            clone.querySelectorAll('.valor').forEach(el => {
+                el.style.color = '#334155';
+            });
+
+            executarCopiaClipboard(clone, 'Tabela geral copiada (Ajustada para o SEI)!');
+        }
+
+        // Isolamos a parte final do Copy em uma função para evitar duplicar código
+        function executarCopiaClipboard(element, mensagemSucesso) {
+            const htmlContent = element.outerHTML;
+
+            if (navigator.clipboard && window.ClipboardItem) {
+                navigator.clipboard.write([
+                    new ClipboardItem({
+                        'text/html': new Blob([htmlContent], { type: 'text/html' }),
+                        'text/plain': new Blob([element.innerText], { type: 'text/plain' })
+                    })
+                ]).then(() => {
+                    btnCopiar.innerHTML = '✅ Copiado!';
+                    setTimeout(() => { btnCopiar.innerHTML = 'Copiar (Colar SEI)'; }, 3000);
+                    showToast(mensagemSucesso, 'success');
+                }).catch(err => {
+                    console.error(err);
+                    showToast('Erro ao copiar a tabela.', 'error');
+                });
+            } else {
+                const range = document.createRange();
+                // Anexa o elemento invisível à tela temporariamente caso precise, mas geralmente document.createRange funciona in-memory
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                tempDiv.appendChild(element);
+                document.body.appendChild(tempDiv);
+
+                range.selectNode(element);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                try {
+                    document.execCommand('copy');
+                    btnCopiar.innerHTML = '✅ Copiado!';
+                    setTimeout(() => { btnCopiar.innerHTML = 'Copiar (Colar SEI)'; }, 3000);
+                    showToast(mensagemSucesso, 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Erro ao copiar a tabela.', 'error');
+                }
+                selection.removeAllRanges();
+                document.body.removeChild(tempDiv);
+            }
+        }
+
+        // ==================================================================
+        // EXPORTAR EXCEL
+        // ==================================================================
+        function exportarExcel() {
+            if (!window.ultimosDados || window.ultimosDados.length === 0) return;
+
+            const cabecalhos = [
+                "CÓDIGO",
+                "PROPONENTE NOME", "PROPONENTE CPF", "PROPONENTE ESTADO CIVIL",
+                "CÔNJUGE NOME", "CÔNJUGE CPF",
+                "LINHA DE FINANCIAMENTO", "SAT", "SIB",
+                "PROJETO", "SERV. ATER",
+                "ITBI", "MEDIÇÃO", "CARTÓRIO",
+                "CAPACITAÇÃO", "LAUDO", "PRODUÇÃO", "PAA OU PNAE", "PRONAF-A",
+                "TOTAL"
+            ];
+
+            let csvContent = "\uFEFF" + cabecalhos.join(";") + "\r\n";
+
+            window.ultimosDados.forEach(row => {
+                const formatNumber = (val) => {
+                    const num = parseNumericValue(val);
+                    if (num == null) return "0,00";
+                    return num.toFixed(2).replace('.', ',');
+                };
+
+                const linha = [
+                    row['PROCESSO'] || '',
+                    row['BENEFICIARIO'] || '',
+                    row['CPF'] || '',
+                    row['ESTADO CIVIL'] || '',
+                    row['NOME CONJUGE'] || '',
+                    row['CPF CONJUGE'] || '',
+                    row['LINHA DE FINANCIAMENTO'] || '',
+                    formatNumber(row['SAT']),
+                    formatNumber(row['SIB']),
+                    formatNumber(row['ELAB. PROJETO']),
+                    formatNumber(row['SERV. ATER']),
+                    formatNumber(row['ITBI']),
+                    formatNumber(row['GEO']),
+                    formatNumber(row['CARTORIO']),
+                    formatNumber(row['CAPAC. INICIAL']),
+                    formatNumber(row['LAUDO AVALIACAO']),
+                    formatNumber(row['PRODUCAO']),
+                    formatNumber(row['PAA OU PNAE']),
+                    formatNumber(row['PRONAF-A']),
+                    formatNumber(row['TOTAL'])
+                ];
+
+                const linhaEscapada = linha.map(item => `"${String(item).replace(/"/g, '""')}"`);
+
+                csvContent += linhaEscapada.join(";") + "\r\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.setAttribute("href", url);
+            link.setAttribute("download", "processos_pncf.csv");
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('Arquivo baixado com sucesso!', 'success');
+        }
+
+        btnClear.addEventListener('click', () => {
+            searchInput.value = '';
+            searchTags.innerHTML = '';
+            window.ultimosDados = null;
+            tableArea.innerHTML = '';
+            updateUI();
+            setStatus('Tabela limpa. Informe novos números de processo.', '');
+            setPill('PostgreSQL');
+        });
+
+        // ==================================================================
+        // NOVA FUNÇÃO DE BUSCA CONECTADA COM API DO POSTGRES
+        // ==================================================================
+        async function buscarDados() {
+            const texto = searchInput.value;
+            const codigos = extrairCodigos(texto);
+
+            if (codigos.length === 0) {
+                showToast('Digite ao menos um código para buscar.', 'error');
+                return;
+            }
+
+            renderTags(codigos);
+            setStatus('Consultando a base de dados...', '');
+            setPill('PostgreSQL', true);
+            btnBuscar.disabled = true;
+
+            try {
+                // Envia os dados para a sua própria API
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tabela: TABELA,
+                        coluna: COLUNA_FILTRO,
+                        codigos: codigos
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro de rede ou do servidor (Status: ${response.status})`);
+                }
+
+                const data = await response.json(); // A resposta do seu backend
+
+                window.ultimosDados = data;
+                renderTable(data);
+
+                if (data && data.length > 0) {
+                    setStatus(`${data.length} registro(s) encontrado(s).`, 'ok');
+                    showToast(`${data.length} registro(s) encontrado(s)!`, 'success');
+                } else {
+                    setStatus('Nenhum registro encontrado.', 'err');
+                    showToast('Nenhum resultado encontrado.', 'error');
+                }
+                setPill('PostgreSQL');
+
+            } catch (err) {
+                console.error('Fetch error:', err);
+                setStatus('Erro de conexão: ' + err.message, 'err');
+                setPill('Erro');
+                showToast('Falha na comunicação com a API. Verifique a conexão.', 'error');
+            } finally {
+                btnBuscar.disabled = false;
+                updateUI();
+            }
+        }
+    </script>
+</body>
+
+</html>

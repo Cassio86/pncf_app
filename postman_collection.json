@@ -1,0 +1,366 @@
+{
+  "info": {
+    "name": "API PostgreSQL - serverNew.js",
+    "description": "Coleção de rotas do arquivo serverNew.js",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Minuta de Oficio",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigos\": [\"123\", \"456\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/minuta",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "minuta"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Usuários",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/usuarios",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "usuarios"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Inserir Novo Registro",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Exemplo\",\n  \"valor\": 1500\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/novo-registro",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "novo-registro"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Processos Principais",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"atividades\": [\"Atividade A\", \"Atividade B\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/principal",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "principal"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Grid de Imóveis",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"processosIds\": [\"123\", \"456\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/imoveis",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "imoveis"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Processos SEI",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"processosIds\": [\"123\", \"456\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/sei",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "sei"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Contratações",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/contratacoes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "contratacoes"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Processos no Banco",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/processos-banco",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "processos-banco"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Consultar Processos (Segmentada)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigos\": [\"123\", \"456\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/consultar-processos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "consultar-processos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Segmentada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idgrupo\": \"1\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/segmentada",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "segmentada"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atualizar Segmentada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"12345\",\n  \"statusProcesso\": 2,\n  \"observacao\": \"Teste de observação\",\n  \"processo_sei\": \"12345.6789/2026-00\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/atualizar-segmentada",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "atualizar-segmentada"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Grupos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/grupos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "grupos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/status",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "status"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Analistas Disponíveis",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/analistas-disponiveis",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "analistas-disponiveis"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar Processo Status (vwprocesso_status)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/processo-status",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "processo-status"
+          ]
+        }
+      }
+    }
+  ]
+}
