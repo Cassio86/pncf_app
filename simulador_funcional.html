@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Elegibilidade PNCF 2026 | Obter Crédito Terra Brasil</title>
+  <meta name="description"
+    content="Simulador Oficial de Elegibilidade e Calculadora de Financiamento do Programa Nacional de Crédito Fundiário (PNCF) 2026 - Serviço Obter Crédito Terra Brasil.">
+  <meta name="author" content="Ministério do Desenvolvimento Agrário e Agricultura Familiar - MDA">
+
+  <!-- Fontes Oficiais Gov.br e Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rawline:wght@400;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            gov: {
+              blue: '#1351B4',
+              darkBlue: '#0C326F',
+              lightBlue: '#E7F0FD',
+              green: '#168821',
+              darkGreen: '#0F5B16',
+              lightGreen: '#E6F4EA',
+              yellow: '#FFCD07',
+              warning: '#D97706',
+              red: '#E52207',
+              darkRed: '#A51300',
+              lightRed: '#FCEBE8',
+              grayBg: '#F8F9FA',
+              border: '#D2D4D6',
+              text: '#1F2937'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Rawline', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- jsPDF & AutoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Estilos Customizados Padrão Gov.br e Acessibilidade */
+    :root {
+      --gov-blue: #1351B4;
+      --gov-green: #168821;
+      --gov-red: #E52207;
+      --gov-bg: #F8F9FA;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--gov-bg);
+      color: #1F2937;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Modo de Alto Contraste */
+    body.high-contrast {
+      background-color: #000000 !important;
+      color: #FFFFFF !important;
+    }
+
+    body.high-contrast .bg-white,
+    body.high-contrast .bg-gov-grayBg,
+    body.high-contrast .bg-slate-50,
+    body.high-contrast .bg-blue-50,
+    body.high-contrast .bg-emerald-50,
+    body.high-contrast .bg-amber-50,
+    body.high-contrast .bg-rose-50 {
+      background-color: #121212 !important;
+      color: #FFFFFF !important;
+      border-color: #FFFF00 !important;
+    }
+
+    body.high-contrast .text-gray-900,
+    body.high-contrast .text-gray-800,
+    body.high-contrast .text-gray-700,
+    body.high-contrast .text-gray-600 {
+      color: #FFFFFF !important;
+    }
+
+    body.high-contrast input,
+    body.high-contrast select,
+    body.high-contrast textarea {
+      background-color: #222222 !important;
+      color: #FFFF00 !important;
+      border-color: #FFFF00 !important;
+    }
+
+    body.high-contrast .text-gov-blue {
+      color: #60A5FA !important;
+    }
+
+    /* Tooltips customizados */
+    .tooltip-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tooltip-box {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 280px;
+      padding: 10px 14px;
+      background-color: #1E293B;
+      color: #FFFFFF;
+      font-size: 0.785rem;
+      font-weight: 400;
+      line-height: 1.4;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      z-index: 50;
+      transition: opacity 0.2s, visibility 0.2s;
+      pointer-events: none;
+    }
+
+    .tooltip-box::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: #1E293B transparent transparent transparent;
+    }
+
+    .tooltip-container:hover .tooltip-box,
+    .tooltip-container:focus-within .tooltip-box {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Animações suaves */
+    .fade-in {
+      animation: fadeIn 0.35s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Barra de Progresso de Passos */
+    .step-item.active .step-bubble {
+      background-color: #1351B4;
+      color: #FFFFFF;
+      box-shadow: 0 0 0 4px #D1E1FA;
+    }
+
+    .step-item.completed .step-bubble {
+      background-color: #168821;
+      color: #FFFFFF;
+    }
+
+    .step-item.pending .step-bubble {
+      background-color: #E5E7EB;
+      color: #4B5563;
+    }
+
+    /* Print styling */
+    @media print {
+
+      header,
+      .no-print,
+      footer,
+      #stepNavButtons,
+      #btnAcessibilidade {
+        display: none !important;
+      }
+
+      body {
+        background: white;
+        color: black;
+      }
+
+      .print-only {
+        display: block !important;
+      }
+
+      #step4 {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-100 selection:text-gov-blue">
+
+  <!-- BARRA DE ACESSIBILIDADE E GOVERNO FEDERAL BRASIL -->
+  <header class="w-full no-print">
+    <!-- Topo Oficial Gov.br -->
+    <div class="bg-[#0C326F] text-white text-xs py-1.5 px-4 sm:px-8 border-b border-blue-900/40">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <a href="https://www.gov.br" target="_blank" rel="noopener noreferrer"
+            class="font-extrabold tracking-wider text-sm flex items-center gap-1.5 hover:opacity-90 transition">
+            <span class="text-[#FFCD07] text-base">★</span> BRASIL
+          </a>
+          <span class="text-blue-300 hidden sm:inline">|</span>
+          <span class="text-blue-200 hidden sm:inline font-medium">Ministério do Desenvolvimento Agrário e Agricultura
+            Familiar (MDA)</span>
+        </div>
+        <div class="flex items-center gap-3 text-[11px]" id="btnAcessibilidade">
+          <button type="button" onclick="toggleContrast()"
+            class="hover:text-[#FFCD07] flex items-center gap-1 transition px-2 py-0.5 rounded bg-blue-950/60"
+            title="Alternar Alto Contraste">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+            <span class="hidden sm:inline">Alto Contraste</span>
+          </button>
+          <div class="flex items-center gap-1 bg-blue-950/60 px-2 py-0.5 rounded">
+            <button type="button" onclick="alterarFonte(-1)" class="hover:text-[#FFCD07] font-bold px-1"
+              title="Diminuir Fonte">A-</button>
+            <button type="button" onclick="alterarFonte(1)" class="hover:text-[#FFCD07] font-bold px-1"
+              title="Aumentar Fonte">A+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Principal do Serviço -->
+    <div class="bg-white border-b border-gray-200 shadow-sm">
+      <div
+        class="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <div
+            class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-gov-blue to-gov-darkBlue flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <i class="fa-solid fa-wheat-awn text-2xl text-[#FFCD07]"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-100 text-gov-blue">
+                Exercício 2026
+              </span>
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-gov-green">
+                <i class="fa-solid fa-check-circle mr-1"></i> Terra Brasil Oficial
+              </span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight mt-0.5">
+              Simulador PNCF &amp; Calculadora de Financiamento
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-600 mt-0.5">
+              Serviço Digital: <strong>Obter Crédito Terra Brasil</strong> • Programa Nacional de Crédito Fundiário
+            </p>
+          </div>
+        </div>
+
+        <!-- Botões de Demonstração Rápida (Cenários Guiados) -->
+        <div class="flex items-center flex-wrap gap-2 self-start md:self-auto">
+          <div class="text-xs text-gray-500 hidden lg:block mr-1">Exemplos:</div>
+          <button type="button" onclick="carregarCenario('social')"
+            class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1.5 rounded-lg border border-emerald-200 transition flex items-center gap-1.5 shadow-sm"
+            title="Preencher com perfil PNCF Social">
+            <i class="fa-solid fa-seedling text-emerald-600"></i> PNCF Social
+          </button>
+          <button type="button" onclick="carregarCenario('juventude')"
+            class="text-xs bg-blue-50 hover:bg-blue-100 text-gov-blue font-semibold px-2.5 py-1.5 rounded-lg border border-blue-200 transition flex items-center gap-1.5 shadow-sm"
+            title="Preencher com perfil PNCF Terra da Juventude">
+            <i class="fa-solid fa-user-graduate text-gov-blue"></i> PNCF Jovem
+          </button>
+          <button type="button" onclick="carregarCenario('maisterra')"
+            class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold px-2.5 py-1.5 rounded-lg border border-amber-200 transition flex items-center gap-1.5 shadow-sm"
+            title="Preencher com perfil PNCF Mais Terra">
+            <i class="fa-solid fa-tractor text-amber-600"></i> PNCF Mais
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL (WIZARD 4 PASSOS) -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8">
+
+    <!-- BARRA DE PROGRESSO EM 4 ETAPAS -->
+    <div class="mb-8 no-print">
+      <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200">
+        <div class="grid grid-cols-4 gap-2 sm:gap-4 relative">
+          <!-- Linha conectora -->
+          <div class="hidden sm:block absolute top-1/2 left-8 right-8 h-1 bg-gray-200 -translate-y-4 -z-0">
+            <div id="progressBarLine" class="h-full bg-gov-blue transition-all duration-500" style="width: 25%;"></div>
+          </div>
+
+          <!-- Passo 1 -->
+          <div id="stepHeader1"
+            class="step-item active flex flex-col items-center text-center cursor-pointer relative z-10"
+            onclick="navegarParaPasso(1)">
+            <div
+              class="step-bubble w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300">
+              <span class="step-num">1</span>
+            </div>
+            <span class="mt-2 text-[11px] sm:text-xs font-semibold text-gray-800 line-clamp-1">1. Perfil Pessoal</span>
+            <span class="hidden sm:inline text-[10px] text-gray-500">Identificação &amp; Anos</span>
+          </div>
+
+          <!-- Passo 2 -->
+          <div id="stepHeader2"
+            class="step-item pending flex flex-col items-center text-center cursor-pointer relative z-10"
+            onclick="navegarParaPasso(2)">
+            <div
+              class="step-bubble w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300">
+              <span class="step-num">2</span>
+            </div>
+            <span class="mt-2 text-[11px] sm:text-xs font-semibold text-gray-800 line-clamp-1">2. Impedimentos</span>
+            <span class="hidden sm:inline text-[10px] text-gray-500">Vedações Legais</span>
+          </div>
+
+          <!-- Passo 3 -->
+          <div id="stepHeader3"
+            class="step-item pending flex flex-col items-center text-center cursor-pointer relative z-10"
+            onclick="navegarParaPasso(3)">
+            <div
+              class="step-bubble w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300">
+              <span class="step-num">3</span>
+            </div>
+            <span class="mt-2 text-[11px] sm:text-xs font-semibold text-gray-800 line-clamp-1">3. Renda &amp;
+              Linha</span>
+            <span class="hidden sm:inline text-[10px] text-gray-500">Socioeconômico 2026</span>
+          </div>
+
+          <!-- Passo 4 -->
+          <div id="stepHeader4"
+            class="step-item pending flex flex-col items-center text-center cursor-pointer relative z-10"
+            onclick="navegarParaPasso(4)">
+            <div
+              class="step-bubble w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300">
+              <span class="step-num">4</span>
+            </div>
+            <span class="mt-2 text-[11px] sm:text-xs font-semibold text-gray-800 line-clamp-1">4. Simulação &amp;
+              PDF</span>
+            <span class="hidden sm:inline text-[10px] text-gray-500">Calculadora &amp; Parecer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULÁRIO WIZARD CONTAINER -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+
+      <!-- ========================================================================= -->
+      <!-- PASSO 1: IDENTIFICAÇÃO & PERFIL PESSOAL -->
+      <!-- ========================================================================= -->
+      <section id="step1" class="p-6 sm:p-8 fade-in">
+        <div class="border-b border-gray-100 pb-4 mb-6">
+          <div class="flex items-center gap-2 text-gov-blue text-sm font-semibold mb-1">
+            <i class="fa-solid fa-id-card"></i> PASSO 1 DE 4
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+            Identificação &amp; Perfil do Produtor(a)
+          </h2>
+          <p class="text-sm text-gray-600 mt-1">
+            Informe seus dados básicos e o histórico de atividade agropecuária. Os dados são usados exclusivamente para
+            a simulação na sua máquina.
+          </p>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Nome Completo -->
+          <div>
+            <label for="inputNome" class="block text-sm font-semibold text-gray-800 mb-1">
+              Nome Completo do(a) Proponente <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <i class="fa-regular fa-user"></i>
+              </div>
+              <input type="text" id="inputNome" placeholder="Ex: Maria José da Silva Oliveira"
+                class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none transition text-gray-800 font-medium text-sm sm:text-base"
+                required>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Como constará na capa do seu relatório oficial de documentos.</p>
+          </div>
+
+          <!-- Grid Idade e Anos de Experiência -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Idade -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="inputIdade" class="block text-sm font-semibold text-gray-800">
+                  Idade Atual (anos) <span class="text-red-500">*</span>
+                </label>
+                <span class="text-xs text-gray-500">16 a 70 anos</span>
+              </div>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                  <i class="fa-solid fa-cake-candles"></i>
+                </div>
+                <input type="number" id="inputIdade" min="16" max="99" placeholder="Ex: 28"
+                  oninput="validarIdadeOnChange()"
+                  class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none transition text-gray-800 font-medium text-sm sm:text-base">
+              </div>
+
+              <!-- Alerta ou Informação de Idade -->
+              <div id="idadeFeedback" class="mt-2 text-xs"></div>
+
+              <!-- Campo Emancipado (Condicional para 16 e 17 anos) -->
+              <div id="boxEmancipado" class="hidden mt-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" id="checkEmancipado" onchange="atualizarValidacaoPasso1()"
+                    class="mt-1 w-4 h-4 text-gov-blue rounded border-gray-300 focus:ring-gov-blue">
+                  <div>
+                    <span class="text-xs font-bold text-amber-900 block">Sou legalmente emancipado(a)</span>
+                    <span class="text-[11px] text-amber-800">
+                      Obrigatório para jovens de 16 e 17 anos conforme a legislação do PNCF (exige certidão de
+                      emancipação em cartório).
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Experiência Rural -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="inputExperiencia" class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                  Experiência Rural <span class="text-red-500">*</span>
+                  <div class="tooltip-container">
+                    <button type="button" class="text-gray-400 hover:text-gov-blue focus:outline-none"
+                      aria-label="Ajuda sobre experiência rural">
+                      <i class="fa-solid fa-circle-question text-xs"></i>
+                    </button>
+                    <div class="tooltip-box">
+                      <strong>Experiência Rural Comprovada:</strong> Período de atividade no campo nos últimos 15 anos
+                      (mínimo de 5 anos em geral, ou 2 anos para jovens de 16 a 19 anos). Comprovável via CNIS Rural,
+                      sindicato ou contratos.
+                    </div>
+                  </div>
+                </label>
+                <span class="text-xs text-gray-500">Últimos 15 anos</span>
+              </div>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                  <i class="fa-solid fa-hand-holding-hand"></i>
+                </div>
+                <input type="number" id="inputExperiencia" min="0" max="30" placeholder="Ex: 6"
+                  oninput="atualizarValidacaoPasso1()"
+                  class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none transition text-gray-800 font-medium text-sm sm:text-base">
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Anos comprováveis como trabalhador(a) rural ou posseiro(a).</p>
+            </div>
+          </div>
+
+          <!-- Dica instrutiva de Linguagem Simples -->
+          <div
+            class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-4 flex items-start gap-3 text-xs sm:text-sm text-blue-900">
+            <i class="fa-solid fa-circle-info text-gov-blue mt-0.5 text-base shrink-0"></i>
+            <div>
+              <p class="font-semibold">Como comprovar a experiência na roça?</p>
+              <p class="text-blue-800 text-xs mt-0.5 leading-relaxed">
+                Você pode comprovar usando o extrato do <strong>CNIS Rural</strong> (Meu INSS), declaração de sindicato
+                de trabalhadores rurais, histórico escolar em escola do campo, contratos de parceria/meação ou notas
+                fiscais de produtor rural.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- PASSO 2: IMPEDIMENTOS LEGAIS & VEDAÇÕES (ELIMINATÓRIOS) -->
+      <!-- ========================================================================= -->
+      <section id="step2" class="p-6 sm:p-8 hidden fade-in">
+        <div class="border-b border-gray-100 pb-4 mb-6">
+          <div class="flex items-center gap-2 text-gov-blue text-sm font-semibold mb-1">
+            <i class="fa-solid fa-shield-halved"></i> PASSO 2 DE 4
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+            Impedimentos Legais &amp; Vedações do Programa
+          </h2>
+          <p class="text-sm text-gray-600 mt-1">
+            Responda às 4 perguntas eliminatórias com total sinceridade. O programa é destinado prioritariamente a quem
+            não possui terra e não ocupa cargos públicos.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Pergunta 1: Servidor Público -->
+          <div class="p-4 sm:p-5 rounded-xl border border-gray-200 hover:border-gray-300 transition bg-white"
+            id="cardImp1">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-3">
+                <span
+                  class="w-7 h-7 rounded-full bg-blue-100 text-gov-blue font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                <div>
+                  <p class="text-sm sm:text-base font-semibold text-gray-900">
+                    Você é servidor público, empregado público ou possui contrato temporário com o governo?
+                  </p>
+                  <p class="text-xs text-gray-500 mt-0.5">
+                    Vedação prevista na Lei Federal nº 8.429/92 e regulamento do PNCF.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-gov-blue has-[:checked]:text-white has-[:checked]:border-gov-blue">
+                  <input type="radio" name="impServidor" value="nao" checked onchange="avaliarImpedimentos()"
+                    class="hidden">
+                  <i class="fa-solid fa-check"></i> NÃO
+                </label>
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-rose-600 has-[:checked]:text-white has-[:checked]:border-rose-600">
+                  <input type="radio" name="impServidor" value="sim" onchange="avaliarImpedimentos()" class="hidden">
+                  <i class="fa-solid fa-xmark"></i> SIM
+                </label>
+              </div>
+            </div>
+            <div id="msgImp1"
+              class="hidden mt-3 pt-3 border-t border-rose-100 text-xs text-rose-700 font-medium flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span><strong>Impedimento:</strong> Servidores públicos não podem ser beneficiários do PNCF para garantir
+                destinação exclusiva a agricultores familiares.</span>
+            </div>
+          </div>
+
+          <!-- Pergunta 2: Já Beneficiário Reforma Agrária/FTRA -->
+          <div class="p-4 sm:p-5 rounded-xl border border-gray-200 hover:border-gray-300 transition bg-white"
+            id="cardImp2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-3">
+                <span
+                  class="w-7 h-7 rounded-full bg-blue-100 text-gov-blue font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                <div>
+                  <p class="text-sm sm:text-base font-semibold text-gray-900">
+                    Você já foi beneficiário de programas de Reforma Agrária (INCRA) ou Crédito Fundiário (FTRA)?
+                  </p>
+                  <p class="text-xs text-gray-500 mt-0.5">
+                    O acesso a programas de aquisição de terras com subsídios federais é concedido uma única vez.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-gov-blue has-[:checked]:text-white has-[:checked]:border-gov-blue">
+                  <input type="radio" name="impIncra" value="nao" checked onchange="avaliarImpedimentos()"
+                    class="hidden">
+                  <i class="fa-solid fa-check"></i> NÃO
+                </label>
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-rose-600 has-[:checked]:text-white has-[:checked]:border-rose-600">
+                  <input type="radio" name="impIncra" value="sim" onchange="avaliarImpedimentos()" class="hidden">
+                  <i class="fa-solid fa-xmark"></i> SIM
+                </label>
+              </div>
+            </div>
+            <div id="msgImp2"
+              class="hidden mt-3 pt-3 border-t border-rose-100 text-xs text-rose-700 font-medium flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span><strong>Impedimento:</strong> Quem já foi assentado pelo INCRA ou beneficiado pelo Fundo de Terras
+                (FTRA) não pode receber novo lote.</span>
+            </div>
+          </div>
+
+          <!-- Pergunta 3: Já possui imóvel >= Fração de Subsistência -->
+          <div class="p-4 sm:p-5 rounded-xl border border-gray-200 hover:border-gray-300 transition bg-white"
+            id="cardImp3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-3">
+                <span
+                  class="w-7 h-7 rounded-full bg-blue-100 text-gov-blue font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                <div>
+                  <p class="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-1.5">
+                    Você já possui imóvel rural com área igual ou superior à fração de subsistência do município?
+                    <span class="tooltip-container">
+                      <button type="button" class="text-gray-400 hover:text-gov-blue"
+                        aria-label="Ajuda sobre fração de subsistência">
+                        <i class="fa-solid fa-circle-question text-xs"></i>
+                      </button>
+                      <span class="tooltip-box">
+                        <strong>Fração Mínima de Parcelamento (FMP):</strong> Tamanho mínimo legal de terra fixado pelo
+                        INCRA para cada município. Quem já possui propriedade desse porte não pode financiar outra.
+                      </span>
+                    </span>
+                  </p>
+                  <p class="text-xs text-gray-500 mt-0.5">
+                    Se possuir apenas fração inferior (área menor que não sustenta a família), a compra é permitida para
+                    complementar.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-gov-blue has-[:checked]:text-white has-[:checked]:border-gov-blue">
+                  <input type="radio" name="impImovel" value="nao" checked onchange="avaliarImpedimentos()"
+                    class="hidden">
+                  <i class="fa-solid fa-check"></i> NÃO
+                </label>
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-rose-600 has-[:checked]:text-white has-[:checked]:border-rose-600">
+                  <input type="radio" name="impImovel" value="sim" onchange="avaliarImpedimentos()" class="hidden">
+                  <i class="fa-solid fa-xmark"></i> SIM
+                </label>
+              </div>
+            </div>
+            <div id="msgImp3"
+              class="hidden mt-3 pt-3 border-t border-rose-100 text-xs text-rose-700 font-medium flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span><strong>Impedimento:</strong> Titulares de propriedades com dimensão igual ou superior à fração
+                mínima não atendem ao perfil de acesso à terra.</span>
+            </div>
+          </div>
+
+          <!-- Pergunta 4: Compra de Imóvel de Parentes & Exceção de Cônjuge Herdeiro de Consentimento -->
+          <div class="p-4 sm:p-5 rounded-xl border border-gray-200 hover:border-gray-300 transition bg-white"
+            id="cardImp4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-3">
+                <span
+                  class="w-7 h-7 rounded-full bg-blue-100 text-gov-blue font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">4</span>
+                <div>
+                  <p class="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-1.5 flex-wrap">
+                    O imóvel rural que deseja comprar pertence a parentes de até 2º grau (pais, avós, filhos, netos,
+                    irmãos ou cônjuge)?
+                    <span class="tooltip-container">
+                      <button type="button" class="text-gray-400 hover:text-gov-blue"
+                        aria-label="Ajuda sobre parentesco e herança">
+                        <i class="fa-solid fa-circle-question text-xs"></i>
+                      </button>
+                      <span class="tooltip-box">
+                        <strong>Exceção de Herança Familiar:</strong> A compra de terras de parentes é permitida pelo
+                        PNCF quando o cônjuge (ou proponente) for herdeiro do imóvel e houver termo formal de
+                        consentimento/anuência dos demais herdeiros.
+                      </span>
+                    </span>
+                  </p>
+                  <p class="text-xs text-gray-500 mt-0.5">
+                    Permitido pelo PNCF desde que o cônjuge seja herdeiro com termo de consentimento dos demais
+                    herdeiros.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-gov-blue has-[:checked]:text-white has-[:checked]:border-gov-blue">
+                  <input type="radio" name="impParentes" value="nao" checked onchange="avaliarImpedimentos()"
+                    class="hidden">
+                  <i class="fa-solid fa-check"></i> NÃO
+                </label>
+                <label
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-amber-600 has-[:checked]:text-white has-[:checked]:border-amber-600">
+                  <input type="radio" name="impParentes" value="sim" onchange="avaliarImpedimentos()" class="hidden">
+                  <i class="fa-solid fa-people-roof"></i> SIM
+                </label>
+              </div>
+            </div>
+
+            <!-- Sub-seção Condicional quando responder SIM: Exceção do Cônjuge Herdeiro de Consentimento -->
+            <div id="boxConsentimentoHerdeiro"
+              class="hidden mt-4 pt-4 border-t border-blue-100 bg-blue-50/70 p-4 rounded-xl border border-blue-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-start gap-2.5">
+                  <i class="fa-solid fa-scale-balanced text-gov-blue mt-0.5 text-base shrink-0"></i>
+                  <div>
+                    <label class="text-xs sm:text-sm font-bold text-gray-900 block">
+                      O cônjuge (ou proponente) é herdeiro do imóvel com Termo Formal de Consentimento/Anuência dos
+                      demais herdeiros?
+                    </label>
+                    <span class="text-[11px] text-gray-600 block mt-0.5">
+                      Para adquirir imóvel de parentes, a norma do PNCF exige que o cônjuge seja herdeiro e apresente a
+                      anuência formal dos outros herdeiros na partilha.
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <label
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-300 text-xs font-bold cursor-pointer transition bg-white hover:bg-emerald-50 text-emerald-800 has-[:checked]:bg-gov-green has-[:checked]:text-white has-[:checked]:border-gov-green shadow-sm">
+                    <input type="radio" name="parenteConsentimento" value="sim" checked onchange="avaliarImpedimentos()"
+                      class="hidden">
+                    <i class="fa-solid fa-check"></i> SIM (Tem Consentimento)
+                  </label>
+                  <label
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-300 text-xs font-bold cursor-pointer transition bg-white hover:bg-rose-50 text-rose-800 has-[:checked]:bg-rose-600 has-[:checked]:text-white has-[:checked]:border-rose-600 shadow-sm">
+                    <input type="radio" name="parenteConsentimento" value="nao" onchange="avaliarImpedimentos()"
+                      class="hidden">
+                    <i class="fa-solid fa-xmark"></i> NÃO (Sem Consentimento)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mensagens de Feedback para Pergunta 4 -->
+            <div id="msgImp4"
+              class="hidden mt-3 pt-3 border-t border-rose-100 text-xs text-rose-700 font-medium flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation text-rose-600 shrink-0"></i>
+              <span id="txtMsgImp4">
+                <strong>Impedimento Legal:</strong> A compra de imóvel pertencente a parentes de até 2º grau é vedada
+                por lei, exceto quando o cônjuge for herdeiro com termo de consentimento dos demais coerdeiros.
+              </span>
+            </div>
+
+            <div id="msgAprovadoHerdeiro"
+              class="hidden mt-3 pt-3 border-t border-emerald-100 text-xs text-emerald-800 font-medium flex items-center gap-2">
+              <i class="fa-solid fa-circle-check text-gov-green shrink-0"></i>
+              <span>
+                <strong>Permitido por Sucessão Familiar:</strong> Aquisição autorizada pelo PNCF mediante comprovação de
+                que o cônjuge é herdeiro com anuência/consentimento formal dos coerdeiros.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div id="boxStatusImpedimentos"
+          class="mt-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm flex items-center gap-3">
+          <i class="fa-solid fa-circle-check text-gov-green text-lg"></i>
+          <div>
+            <strong class="font-bold">Nenhum impedimento legal sinalizado!</strong>
+            <p class="text-emerald-800 text-xs">Todas as respostas atendem às exigências de segurança jurídica do
+              programa.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- PASSO 3: DADOS SOCIOECONÔMICOS & LINHA DE CRÉDITO (EXERCÍCIO 2026) -->
+      <!-- ========================================================================= -->
+      <section id="step3" class="p-6 sm:p-8 hidden fade-in">
+        <div class="border-b border-gray-100 pb-4 mb-6">
+          <div class="flex items-center gap-2 text-gov-blue text-sm font-semibold mb-1">
+            <i class="fa-solid fa-chart-line"></i> PASSO 3 DE 4
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+            Dados Socioeconômicos &amp; Enquadramento 2026
+          </h2>
+          <p class="text-sm text-gray-600 mt-1">
+            Parâmetros atualizados pelo <strong>Ofício Circular MDA nº 2/2026</strong>. O sistema define automaticamente
+            a linha mais vantajosa com juros mais baixos e maior bônus.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Renda Bruta Familiar Anual -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="inputRenda" class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                Renda Bruta Familiar Anual <span class="text-red-500">*</span>
+                <span class="tooltip-container">
+                  <button type="button" class="text-gray-400 hover:text-gov-blue"
+                    aria-label="Ajuda sobre renda familiar">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                  </button>
+                  <span class="tooltip-box">
+                    <strong>Renda Anual (RAMT):</strong> Soma da renda obtida por todos os membros da família nos
+                    últimos 12 meses com a produção ou outras atividades.
+                  </span>
+                </span>
+              </label>
+            </div>
+            <div class="relative">
+              <div
+                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500 font-semibold text-sm">
+                R$
+              </div>
+              <input type="text" id="inputRenda" placeholder="0,00"
+                oninput="mascaraMoeda(this); recalcularLinhaCredito();"
+                class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none transition text-gray-800 font-bold text-base sm:text-lg">
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">Teto Máximo 2026: R$ 327.785,79</p>
+          </div>
+
+          <!-- Patrimônio Líquido Declarado -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="inputPatrimonio" class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                Patrimônio Líquido Declarado <span class="text-red-500">*</span>
+                <span class="tooltip-container">
+                  <button type="button" class="text-gray-400 hover:text-gov-blue" aria-label="Ajuda sobre patrimônio">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                  </button>
+                  <span class="tooltip-box">
+                    <strong>Patrimônio Líquido:</strong> Valor total dos bens da família (máquinas, animais, veículos,
+                    benfeitorias) deduzidas as dívidas existentes.
+                  </span>
+                </span>
+              </label>
+            </div>
+            <div class="relative">
+              <div
+                class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500 font-semibold text-sm">
+                R$
+              </div>
+              <input type="text" id="inputPatrimonio" placeholder="0,00"
+                oninput="mascaraMoeda(this); recalcularLinhaCredito();"
+                class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none transition text-gray-800 font-bold text-base sm:text-lg">
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">Teto Máximo 2026: R$ 500.000,00</p>
+          </div>
+
+          <!-- Possui CadÚnico Ativo? -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                Possui CadÚnico Ativo? <span class="text-red-500">*</span>
+                <span class="tooltip-container">
+                  <button type="button" class="text-gray-400 hover:text-gov-blue" aria-label="Ajuda sobre CadÚnico">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                  </button>
+                  <span class="tooltip-box">
+                    <strong>CadÚnico (Cadastro Único):</strong> Cadastro do Governo Federal para famílias de baixa
+                    renda. É requisito indispensável para acessar a linha PNCF Social com juros de 0,5% e bônus de 40%.
+                  </span>
+                </span>
+              </label>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-1">
+              <label
+                class="flex items-center justify-center gap-2 py-3 px-3 rounded-xl border border-gray-300 font-semibold text-sm cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-gov-blue has-[:checked]:text-white has-[:checked]:border-gov-blue">
+                <input type="radio" name="radioCadUnico" value="sim" onchange="recalcularLinhaCredito()" class="hidden">
+                <i class="fa-solid fa-check"></i> SIM
+              </label>
+              <label
+                class="flex items-center justify-center gap-2 py-3 px-3 rounded-xl border border-gray-300 font-semibold text-sm cursor-pointer transition hover:bg-gray-50 has-[:checked]:bg-gray-700 has-[:checked]:text-white has-[:checked]:border-gray-700">
+                <input type="radio" name="radioCadUnico" value="nao" checked onchange="recalcularLinhaCredito()"
+                  class="hidden">
+                <i class="fa-solid fa-xmark"></i> NÃO
+              </label>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">Necessário para enquadramento na Linha Social.</p>
+          </div>
+        </div>
+
+        <!-- CARD DE ENQUADRAMENTO DA LINHA DE CRÉDITO 2026 (FEEDBACK EM TEMPO REAL) -->
+        <div class="mt-8">
+          <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Diagnóstico de Linha de
+            Financiamento</div>
+
+          <div id="cardLinhaResultado"
+            class="p-5 sm:p-6 rounded-2xl border transition-all duration-300 bg-slate-50 border-gray-200">
+            <!-- Conteúdo dinâmico injetado via JS -->
+            <div class="flex items-center gap-3 text-gray-600">
+              <i class="fa-solid fa-calculator text-xl text-gov-blue"></i>
+              <span class="text-sm">Preencha a renda e patrimônio acima para visualizar o enquadramento oficial.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Matriz Comparativa Rápida das Linhas PNCF 2026 -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wide">
+              Matriz de Linhas PNCF 2026 (Ofício Circular MDA nº 2/2026)
+            </h3>
+            <span class="text-[11px] text-gray-500">Prazo unificado: 25 anos (3 anos de carência)</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <!-- Card PNCF Social -->
+            <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50">
+              <div class="flex items-center justify-between font-bold text-emerald-900 mb-1">
+                <span>PNCF Social</span>
+                <span class="bg-emerald-200 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded">Juros 0,5% a.a.</span>
+              </div>
+              <p class="text-emerald-800 text-[11px]">Renda ≤ R$ 30.359,63</p>
+              <p class="text-emerald-800 text-[11px]">Patrimônio ≤ R$ 70.000,00</p>
+              <div
+                class="mt-2 pt-2 border-t border-emerald-200 flex items-center justify-between font-semibold text-emerald-900">
+                <span>Bônus Adimplência:</span>
+                <span class="text-emerald-700 font-bold">40% de desconto</span>
+              </div>
+            </div>
+
+            <!-- Card PNCF Terra da Juventude -->
+            <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50">
+              <div class="flex items-center justify-between font-bold text-blue-900 mb-1">
+                <span>PNCF Jovem</span>
+                <span class="bg-blue-200 text-blue-800 text-[10px] px-1.5 py-0.5 rounded">Juros 0,5% a.a.</span>
+              </div>
+              <p class="text-blue-800 text-[11px]">Idade: 18 a 30 anos (16-17 eman.)</p>
+              <p class="text-blue-800 text-[11px]">Renda ≤ R$ 60.719,26</p>
+              <div
+                class="mt-2 pt-2 border-t border-blue-200 flex items-center justify-between font-semibold text-blue-900">
+                <span>Bônus Adimplência:</span>
+                <span class="text-blue-700 font-bold">40% de desconto</span>
+              </div>
+            </div>
+
+            <!-- Card PNCF Mais Terra -->
+            <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/50">
+              <div class="flex items-center justify-between font-bold text-amber-900 mb-1">
+                <span>PNCF Mais</span>
+                <span class="bg-amber-200 text-amber-800 text-[10px] px-1.5 py-0.5 rounded">Juros 2,5% a.a.</span>
+              </div>
+              <p class="text-amber-800 text-[11px]">Renda até R$ 60.719,26</p>
+              <p class="text-amber-800 text-[11px]">Patrimônio ≤ R$ 140.000,00</p>
+              <div
+                class="mt-2 pt-2 border-t border-amber-200 flex items-center justify-between font-semibold text-amber-900">
+                <span>Bônus Adimplência:</span>
+                <span class="text-amber-700 font-bold">20% de desconto</span>
+              </div>
+            </div>
+
+            <!-- Card PNCF Empreendedor -->
+            <div class="p-3.5 rounded-xl border border-purple-200 bg-purple-50/50">
+              <div class="flex items-center justify-between font-bold text-purple-900 mb-1">
+                <span>PNCF Empreendedor</span>
+                <span class="bg-purple-200 text-purple-800 text-[10px] px-1.5 py-0.5 rounded">Juros 4,0% a.a.</span>
+              </div>
+              <p class="text-purple-800 text-[11px]">Renda até R$ 327.785,79</p>
+              <p class="text-purple-800 text-[11px]">Patrimônio ≤ R$ 500.000,00</p>
+              <div
+                class="mt-2 pt-2 border-t border-purple-200 flex items-center justify-between font-semibold text-purple-900">
+                <span>Bônus Adimplência:</span>
+                <span class="text-purple-700 font-bold">0% (Sem bônus)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- PASSO 4: CALCULADORA DE FINANCIAMENTO & RESULTADOS -->
+      <!-- ========================================================================= -->
+      <section id="step4" class="p-6 sm:p-8 hidden fade-in">
+        <div class="border-b border-gray-100 pb-4 mb-6">
+          <div class="flex items-center gap-2 text-gov-blue text-sm font-semibold mb-1">
+            <i class="fa-solid fa-calculator"></i> PASSO 4 DE 4
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+            Calculadora de Financiamento &amp; Parecer de Elegibilidade
+          </h2>
+          <p class="text-sm text-gray-600 mt-1">
+            Simule os valores do projeto de financiamento conforme as regras de 2026. Acompanhe as travas de segurança e
+            confira o valor das parcelas anuais.
+          </p>
+        </div>
+
+        <!-- PAINEL SUPERIOR: STATUS GERAL DE ELEGIBILIDADE -->
+        <div id="painelStatusElegibilidade" class="mb-8 p-5 sm:p-6 rounded-2xl border transition-all duration-300">
+          <!-- Injetado via Javascript: Caixa Verde ou Caixa Vermelha -->
+        </div>
+
+        <!-- SIMULADOR FINANCEIRO - CAMPOS EDITÁVEIS -->
+        <div class="bg-gray-50/80 rounded-2xl p-5 sm:p-6 border border-gray-200 mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+                <i class="fa-solid fa-coins text-gov-blue"></i> Composição Financeira do Projeto
+              </h3>
+              <p class="text-xs text-gray-500">Edite os valores abaixo para simular seu crédito de acordo com a
+                propriedade desejada.</p>
+            </div>
+            <div class="text-right hidden sm:block">
+              <span class="text-xs font-semibold text-gray-500 block">Teto Unificado Global 2026:</span>
+              <span class="text-sm font-bold text-gov-blue">R$ 306.044,77</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <!-- SAT: Valor da Terra -->
+            <div>
+              <label for="inputSAT" class="block text-xs font-semibold text-gray-800 mb-1 flex items-center gap-1">
+                Valor do Imóvel / Terra (SAT)
+                <span class="tooltip-container">
+                  <button type="button" class="text-gray-400 hover:text-gov-blue" aria-label="Ajuda sobre SAT">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                  </button>
+                  <span class="tooltip-box">
+                    <strong>SAT (Subprojeto de Aquisição de Terras):</strong> Valor negociado para compra do solo e
+                    benfeitorias já existentes no imóvel rural.
+                  </span>
+                </span>
+              </label>
+              <div class="relative">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-gray-500 pointer-events-none">R$</span>
+                <input type="text" id="inputSAT" value="180.000,00"
+                  oninput="mascaraMoeda(this); recalcularFinanciamento();"
+                  class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none text-sm font-bold text-gray-900 transition">
+              </div>
+              <span class="text-[10px] text-gray-500 mt-1 block">Aquisição do imóvel rural</span>
+            </div>
+
+            <!-- SIB: Infraestrutura Básica -->
+            <div>
+              <label for="inputSIB" class="block text-xs font-semibold text-gray-800 mb-1 flex items-center gap-1">
+                Investimentos em Infra (SIB)
+                <span class="tooltip-container">
+                  <button type="button" class="text-gray-400 hover:text-gov-blue" aria-label="Ajuda sobre SIB">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                  </button>
+                  <span class="tooltip-box">
+                    <strong>SIB (Subprojeto de Investimentos Básicos):</strong> Recursos para construção/reforma da
+                    moradia, água, energia, cercas, plantio e estruturação da produção.
+                  </span>
+                </span>
+              </label>
+              <div class="relative">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-gray-500 pointer-events-none">R$</span>
+                <input type="text" id="inputSIB" value="50.000,00"
+                  oninput="mascaraMoeda(this); recalcularFinanciamento();"
+                  class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none text-sm font-bold text-gray-900 transition">
+              </div>
+              <span class="text-[10px] text-gray-500 mt-1 block">Benfeitorias e estruturação</span>
+            </div>
+
+            <!-- Despesas Acessórias -->
+            <div>
+              <label for="inputDespesas" class="block text-xs font-semibold text-gray-800 mb-1 flex items-center gap-1">
+                Despesas Acessórias
+                <span class="tooltip-container">
+                  <button type="button" class="text-gray-400 hover:text-gov-blue"
+                    aria-label="Ajuda sobre Despesas Acessórias">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                  </button>
+                  <span class="tooltip-box">
+                    <strong>Despesas Acessórias:</strong> Custos de regularização legal: ITBI, escritura pública em
+                    cartório, taxas de registro de imóveis e georreferenciamento.
+                  </span>
+                </span>
+              </label>
+              <div class="relative">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-gray-500 pointer-events-none">R$</span>
+                <input type="text" id="inputDespesas" value="15.000,00"
+                  oninput="mascaraMoeda(this); recalcularFinanciamento();"
+                  class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none text-sm font-bold text-gray-900 transition">
+              </div>
+              <span class="text-[10px] text-gray-500 mt-1 block">ITBI, Cartório &amp; Georreferenc.</span>
+            </div>
+
+            <!-- ATER: Assistência Técnica (Teto 26.200,00) -->
+            <div>
+              <label for="inputATER" class="block text-xs font-semibold text-gray-800 mb-1 flex items-center gap-1">
+                Plano de ATER (5 anos)
+                <span class="tooltip-container">
+                  <button type="button" class="text-gray-400 hover:text-gov-blue" aria-label="Ajuda sobre ATER">
+                    <i class="fa-solid fa-circle-question text-xs"></i>
+                  </button>
+                  <span class="tooltip-box">
+                    <strong>ATER (Assistência Técnica e Extensão Rural):</strong> Acompanhamento técnico agronômico por
+                    5 anos (teto legal de R$ 26.200,00 pela Nota Técnica nº 3/2026/CGCF-MDA).
+                  </span>
+                </span>
+              </label>
+              <div class="relative">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-gray-500 pointer-events-none">R$</span>
+                <input type="text" id="inputATER" value="26.200,00"
+                  oninput="mascaraMoeda(this); recalcularFinanciamento();"
+                  class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 focus:border-gov-blue focus:ring-2 focus:ring-blue-100 outline-none text-sm font-bold text-gray-900 transition">
+              </div>
+              <span class="text-[10px] text-gray-500 mt-1 block">Teto regulamentar: R$ 26.200,00</span>
+            </div>
+          </div>
+
+          <!-- MONITOR DAS TRAVAS DE SEGURANÇA 2026 -->
+          <div class="mt-6 pt-5 border-t border-gray-200 space-y-4">
+
+            <!-- Barra e Percentual de Margem SIB + Despesas (10% a 50%) -->
+            <div>
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span class="font-semibold text-gray-700 flex items-center gap-1.5">
+                  Margem Obrigatória SIB + Despesas:
+                  <span id="labelMargemSIB" class="font-bold text-gov-blue text-sm">--%</span>
+                </span>
+                <span class="text-gray-500 text-[11px]">Exigência Legal 2026: Entre 10% e 50% do total</span>
+              </div>
+              <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden relative">
+                <!-- Zona segura marcada -->
+                <div class="absolute inset-y-0 left-[10%] right-[50%] bg-emerald-100 opacity-60"></div>
+                <!-- Barra de progresso -->
+                <div id="barraProgressoSIB" class="h-full bg-gov-blue transition-all duration-300" style="width: 25%;">
+                </div>
+              </div>
+              <div id="feedbackMargemSIB" class="mt-1.5 text-xs"></div>
+            </div>
+
+            <!-- Feedback da Trava Global (R$ 306.044,77) e ATER (R$ 26.200,00) -->
+            <div id="feedbackTravaGlobal" class="text-xs"></div>
+            <div id="feedbackTravaATER" class="text-xs"></div>
+          </div>
+        </div>
+
+        <!-- PAINEL DE RESULTADOS DETALHADOS E PARCELAS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+          <!-- Card Total Financiado -->
+          <div
+            class="bg-gradient-to-br from-blue-900 to-gov-blue text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
+            <div>
+              <div
+                class="flex items-center justify-between text-blue-200 text-xs font-semibold uppercase tracking-wider mb-2">
+                <span>Total Financiado (2026)</span>
+                <i class="fa-solid fa-file-invoice-dollar text-base"></i>
+              </div>
+              <div class="text-3xl sm:text-4xl font-extrabold tracking-tight mt-1" id="resTotalFinanciado">
+                R$ 0,00
+              </div>
+              <p class="text-xs text-blue-100 mt-2">
+                Soma de Terra (SAT), Infraestrutura (SIB), Despesas Acessórias e ATER (5 anos).
+              </p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-blue-400/30 text-xs space-y-1.5 text-blue-100">
+              <div class="flex justify-between">
+                <span>Linha Enquadrada:</span>
+                <strong id="resLinhaNome" class="text-white">--</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>Taxa de Juros Anual:</span>
+                <strong id="resTaxaJuros" class="text-white">--</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>Prazo Total:</span>
+                <span class="text-white font-medium">25 anos (3 anos carência)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Parcela Anual Sem Bônus -->
+          <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div
+                class="flex items-center justify-between text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2">
+                <span>Parcela Anual Estimada (Bruta)</span>
+                <i class="fa-regular fa-calendar-xmark text-base text-gray-400"></i>
+              </div>
+              <div class="text-2xl sm:text-3xl font-bold text-gray-700 tracking-tight mt-1" id="resParcelaBruta">
+                R$ 0,00
+              </div>
+              <p class="text-xs text-gray-500 mt-2">
+                Valor contratual sem considerar o benefício concedido pelo Governo Federal para pagamentos pontuais.
+              </p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-600 space-y-1">
+              <span class="block font-medium">Fórmula Oficial:</span>
+              <span class="text-[11px] text-gray-500 font-mono">
+                [Total × (1 + (Juros × 25))] ÷ 25
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Parcela com Bônus de Adimplência (DESTAQUE) -->
+          <div
+            class="bg-gradient-to-br from-emerald-800 to-gov-green text-white rounded-2xl p-6 shadow-md flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none">
+            </div>
+
+            <div>
+              <div
+                class="flex items-center justify-between text-emerald-200 text-xs font-bold uppercase tracking-wider mb-2">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-gift"></i> Parcela com Bônus
+                </span>
+                <span id="badgeBonusPorcento"
+                  class="bg-emerald-950/60 text-emerald-200 px-2 py-0.5 rounded text-[11px] font-bold">
+                  40% OFF
+                </span>
+              </div>
+              <div class="text-3xl sm:text-4xl font-extrabold tracking-tight mt-1 text-[#FFCD07]"
+                id="resParcelaComBonus">
+                R$ 0,00
+              </div>
+              <p class="text-xs text-emerald-100 mt-2">
+                Valor real a pagar anualmente cumprindo o compromisso de pagar a parcela rigorosamente em dia.
+              </p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-emerald-400/30 text-xs text-emerald-100 space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span>Economia por ano:</span>
+                <span class="font-bold text-white text-sm" id="resEconomiaAnual">R$ 0,00</span>
+              </div>
+              <div class="flex justify-between items-center text-[11px] text-emerald-200">
+                <span>Economia total (25 anos):</span>
+                <span class="font-semibold text-white" id="resEconomiaTotal">R$ 0,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEÇÃO DE AÇÃO PRINCIPAL: GERADOR DE PDF E CHECKLIST -->
+        <div
+          class="p-6 sm:p-8 rounded-2xl bg-slate-900 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
+          <div class="space-y-2 text-center md:text-left">
+            <div
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+              <i class="fa-solid fa-file-pdf"></i> Relatório Completo Personalizado
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold tracking-tight">
+              Baixe seu Diagnóstico &amp; Checklist de Documentos
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-xl">
+              Gere um relatório oficial em PDF pronto para imprimir, com o resumo da sua simulação e o <strong>Checklist
+                completo com 17 documentos essenciais</strong> divididos por núcleos (Beneficiário, Imóvel, Vendedor e
+              ATER).
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+            <button type="button" onclick="gerarRelatorioPDF('download')" id="btnGerarPDF"
+              class="w-full sm:w-auto px-6 py-3.5 bg-gov-blue hover:bg-blue-600 text-white font-bold text-sm sm:text-base rounded-xl shadow-md transition flex items-center justify-center gap-2.5 border border-blue-400/30 hover:scale-[1.02] active:scale-[0.99]"
+              title="Baixar relatório oficial em formato PDF (.pdf)">
+              <i class="fa-solid fa-file-arrow-down text-lg"></i>
+              <span>Baixar Checklist em PDF</span>
+            </button>
+            <button type="button" onclick="gerarRelatorioPDF('visualizar')" id="btnVisualizarPDF"
+              class="w-full sm:w-auto px-4 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2 border border-slate-700 hover:text-white"
+              title="Visualizar documento PDF na tela">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span>Visualizar PDF</span>
+            </button>
+            <button type="button" onclick="window.print()"
+              class="w-full sm:w-auto px-4 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2 border border-slate-700 hover:text-white">
+              <i class="fa-solid fa-print"></i>
+              <span class="hidden sm:inline">Imprimir</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PRÉVIA VISUAL DO CHECKLIST DOS 4 NÚCLEOS DE DOCUMENTOS NA TELA -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-gov-green"></i> Documentos Obrigatórios para Contratação
+              </h4>
+              <p class="text-xs text-gray-500">Documentação que você e o técnico precisarão apresentar no agente
+                financeiro (Banco do Brasil, Banco do Nordeste, etc.).</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Núcleo 1: Proponente -->
+            <div class="p-4 rounded-xl border border-gray-200 bg-white">
+              <div class="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2 text-gov-blue">
+                <i class="fa-solid fa-user-check"></i> 1. Documentos do(a) Beneficiário(a)
+              </div>
+              <ul class="space-y-1.5 text-gray-600">
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> RG e CPF
+                  (do titular e cônjuge/companheiro)</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Certidão de
+                  Estado Civil (Casamento, Nascimento ou União Estável)</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Extrato
+                  CNIS Rural (Meu INSS) ou Comprovação de 5 anos de campo</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Certidão de
+                  Quitação Eleitoral e Certidão Negativa Cível/Criminal</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Declaração
+                  de Não-Servidor Público e Não-Assentado INCRA</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> DAP ativa
+                  ou Inscrição no CAF (Cadastro da Agricultura Familiar)</li>
+              </ul>
+            </div>
+
+            <!-- Núcleo 2: Imóvel -->
+            <div class="p-4 rounded-xl border border-gray-200 bg-white">
+              <div class="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2 text-emerald-700">
+                <i class="fa-solid fa-map-location-dot"></i> 2. Documentos do Imóvel Rural
+              </div>
+              <ul class="space-y-1.5 text-gray-600">
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Certidão de
+                  Inteiro Teor da Matrícula (atualizada há &lt; 30 dias)</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Certificado
+                  de Cadastro de Imóvel Rural (CCIR) quitado</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> ITR
+                  (últimos 5 anos) ou Certidão Negativa de Débitos Rurais</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Inscrição
+                  no Cadastro Ambiental Rural (CAR) ativo</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Planta e
+                  Memorial com Polígono Shapefile (SIRGAS 2000)</li>
+              </ul>
+            </div>
+
+            <!-- Núcleo 3: Vendedor -->
+            <div class="p-4 rounded-xl border border-gray-200 bg-white">
+              <div class="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2 text-amber-800">
+                <i class="fa-solid fa-handshake"></i> 3. Documentos do Vendedor (Proprietário)
+              </div>
+              <ul class="space-y-1.5 text-gray-600">
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> RG e CPF
+                  dos proprietários e cônjuges</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Certidão
+                  Negativa Conjunta da Receita Federal e PGFN</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Certidões
+                  Negativas da Justiça Federal e Trabalhista (CNDT)</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Termo de
+                  Intenção de Venda e Anuência de Preço</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Termo de
+                  Consentimento dos Herdeiros e Cônjuge (se imóvel de parentes)</li>
+              </ul>
+            </div>
+
+            <!-- Núcleo 4: ATER & Projeto -->
+            <div class="p-4 rounded-xl border border-gray-200 bg-white">
+              <div class="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2 text-purple-800">
+                <i class="fa-solid fa-compass-drafting"></i> 4. ATER &amp; Projeto Técnico
+              </div>
+              <ul class="space-y-1.5 text-gray-600">
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> ART / TRT
+                  quitada do Engenheiro Agrônomo ou Técnico Agrícola</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Projeto
+                  Técnico de Financiamento (PTF) e Viabilidade Econômica</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Subprojeto
+                  de Aquisição de Terras (SAT) e Laudo de Avaliação</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Subprojeto
+                  de Investimentos Básicos (SIB) detalhado</li>
+                <li class="flex items-start gap-2"><i class="fa-regular fa-square text-gray-400 mt-0.5"></i> Plano de
+                  Acompanhamento Técnico (PAT 5 anos) credenciado</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- BARRA INFERIOR DE NAVEGAÇÃO DOS PASSOS (ANTERIOR / PRÓXIMO) -->
+      <!-- ========================================================================= -->
+      <div id="stepNavButtons"
+        class="bg-gray-50 border-t border-gray-200 p-4 sm:p-6 flex items-center justify-between no-print">
+        <button type="button" id="btnVoltar" onclick="passoAnterior()"
+          class="hidden px-5 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold text-sm transition items-center gap-2">
+          <i class="fa-solid fa-arrow-left"></i> Voltar
+        </button>
+
+        <div class="text-xs text-gray-500 font-medium hidden sm:block" id="textoPassoAtual">
+          Passo 1 de 4: Perfil Pessoal
+        </div>
+
+        <button type="button" id="btnAvancar" onclick="proximoPasso()"
+          class="ml-auto px-6 py-2.5 rounded-xl bg-gov-blue hover:bg-blue-700 text-white font-semibold text-sm transition flex items-center gap-2 shadow-sm">
+          <span>Avançar para Impedimentos</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- CARDS DE INFORMAÇÕES ADICIONAIS & CANAIS DE ATENDIMENTO -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs no-print">
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-blue-100 text-gov-blue flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-phone-volume"></i>
+        </div>
+        <div>
+          <strong class="text-gray-900 block font-bold">Central de Atendimento MDA</strong>
+          <p class="text-gray-500 mt-0.5">Ligue 0800 728 0101 ou procure o Sindicato dos Trabalhadores Rurais do seu
+            município.</p>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-gov-green flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <div>
+          <strong class="text-gray-900 block font-bold">Agentes Financeiros Habilitados</strong>
+          <p class="text-gray-500 mt-0.5">Banco do Brasil, Banco do Nordeste (BNB).</p>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-scale-balanced"></i>
+        </div>
+        <div>
+          <strong class="text-gray-900 block font-bold">Aviso Legal</strong>
+          <p class="text-gray-500 mt-0.5">Esta ferramenta é uma simulação preliminar e não dispensa a análise documental
+            e cadastral bancária formal.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RODAPÉ GOV.BR -->
+  <footer class="bg-[#0C326F] text-white mt-12 py-8 px-4 sm:px-8 border-t border-blue-900 text-xs no-print">
+    <div
+      class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+      <div>
+        <p class="font-bold text-sm">Programa Nacional de Crédito Fundiário - Terra Brasil</p>
+        <p class="text-blue-200 text-xs mt-0.5">Ministério do Desenvolvimento Agrário e Agricultura Familiar • Exercício
+          2026</p>
+      </div>
+      <div class="flex items-center gap-4 text-blue-200 text-xs">
+        <a href="https://www.gov.br/mda" target="_blank" rel="noopener noreferrer"
+          class="hover:text-white underline">Portal MDA</a>
+        <span>•</span>
+        <a href="https://www.gov.br/pt-br/servicos/obter-credito-terra-brasil" target="_blank" rel="noopener noreferrer"
+          class="hover:text-white underline">Serviço Obter Crédito Terra Brasil</a>
+        <span>•</span>
+        <button type="button" onclick="reiniciarSimulacao()"
+          class="hover:text-[#FFCD07] text-blue-100 font-semibold underline">Limpar e Reiniciar</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- SCRIPT DE REGRAS DE NEGÓCIO, VALIDAÇÕES E GERAÇÃO DE PDF -->
+  <!-- ========================================================================= -->
+  <script>
+    // ESTADO GLOBAL DA APLICAÇÃO
+    const estado = {
+      passoAtual: 1,
+      // Passo 1
+      nome: '',
+      idade: 28,
+      emancipado: false,
+      experiencia: 6,
+      // Passo 2
+      impServidor: false,
+      impIncra: false,
+      impImovel: false,
+      impParentes: false,
+      parenteConsentimento: true,
+      // Passo 3
+      renda: 28000,
+      patrimonio: 45000,
+      cadUnico: true,
+      // Passo 4
+      sat: 180000,
+      sib: 50000,
+      despesas: 15000,
+      ater: 26200,
+      // Resultados calculados
+      elegivel: true,
+      motivosReprovacao: [],
+      linhaEnquadrada: null,
+      totalFinanciado: 0,
+      margemSIB: 0,
+      parcelaBruta: 0,
+      parcelaComBonus: 0,
+      economiaAnual: 0,
+      economiaTotal: 0
+    };
+
+    // TABELA OFICIAL DE LINHAS DE CRÉDITO 2026 (OFÍCIO CIRCULAR MDA Nº 2/2026)
+    const TABELA_LINHAS_2026 = {
+      social: {
+        id: 'social',
+        nome: 'PNCF Social',
+        juros: 0.005, // 0,5% a.a.
+        jurosTexto: '0,5% a.a.',
+        bonus: 0.40, // 40%
+        bonusTexto: '40%',
+        rendaMax: 30359.63,
+        patrimonioMax: 70000.00,
+        requerCadUnico: true,
+        descricao: 'Destinado a famílias agricultoras de baixa renda com CadÚnico ativo. Proporciona a menor taxa de juros e o maior bônus de adimplência do programa.',
+        corBadge: 'bg-emerald-100 text-emerald-800 border-emerald-300'
+      },
+      juventude: {
+        id: 'juventude',
+        nome: 'PNCF Jovem',
+        juros: 0.005, // 0,5% a.a.
+        jurosTexto: '0,5% a.a.',
+        bonus: 0.40, // 40%
+        bonusTexto: '40%',
+        idadeMin: 16,
+        idadeMax: 30,
+        rendaMax: 60719.26,
+        patrimonioMax: 140000.00,
+        requerCadUnico: false,
+        descricao: 'Linha exclusiva para jovens rurais (18 a 30 anos, ou 16 a 17 emancipados), incentivando a sucessão familiar no campo com condições especiais.',
+        corBadge: 'bg-blue-100 text-gov-blue border-blue-300'
+      },
+      maisTerra: {
+        id: 'maisTerra',
+        nome: 'PNCF Mais',
+        juros: 0.025, // 2,5% a.a.
+        jurosTexto: '2,5% a.a.',
+        bonus: 0.20, // 20%
+        bonusTexto: '20%',
+        rendaMax: 60719.26,
+        patrimonioMax: 140000.00,
+        requerCadUnico: false,
+        descricao: 'Para agricultores familiares consolidados que buscam adquirir a terra própria ou ampliar sua área produtiva.',
+        corBadge: 'bg-amber-100 text-amber-900 border-amber-300'
+      },
+      empreendedor: {
+        id: 'empreendedor',
+        nome: 'PNCF Empreendedor',
+        juros: 0.040, // 4,0% a.a.
+        jurosTexto: '4,0% a.a.',
+        bonus: 0.00, // 0%
+        bonusTexto: '0%',
+        rendaMin: 60719.27,
+        rendaMax: 327785.79,
+        patrimonioMax: 500000.00,
+        requerCadUnico: false,
+        descricao: 'Para agricultores familiares com maior escala produtiva e capacidade financeira.',
+        corBadge: 'bg-purple-100 text-purple-900 border-purple-300'
+      }
+    };
+
+    // LIMITES GLOBAIS 2026
+    const TETO_UNIFICADO_GLOBAL_2026 = 306044.77;
+    const TETO_ATER_2026 = 26200.00;
+    const PRAZO_ANOS = 25;
+
+    // INICIALIZAÇÃO
+    document.addEventListener('DOMContentLoaded', () => {
+      // Preencher valores padrão iniciais nos inputs
+      document.getElementById('inputNome').value = 'Manoel da Silva Pereira';
+      document.getElementById('inputIdade').value = '28';
+      document.getElementById('inputExperiencia').value = '7';
+      document.getElementById('inputRenda').value = '28.500,00';
+      document.getElementById('inputPatrimonio').value = '42.000,00';
+
+      const cadUnicoRadio = document.querySelector('input[name="radioCadUnico"][value="sim"]');
+      if (cadUnicoRadio) cadUnicoRadio.checked = true;
+
+      sincronizarCamposComEstado();
+      validarIdadeOnChange();
+      recalcularLinhaCredito();
+      recalcularFinanciamento();
+    });
+
+    // MÁSCARA MONETÁRIA BRASILEIRA (R$ 0.000,00)
+    function mascaraMoeda(input) {
+      let valor = input.value.replace(/\D/g, '');
+      if (!valor) {
+        input.value = '0,00';
+        return;
+      }
+      let numero = (parseInt(valor, 10) / 100).toFixed(2);
+      let partes = numero.split('.');
+      partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      input.value = partes.join(',');
+    }
+
+    // CONVERSÃO DE STRING BRASILEIRA PARA FLOAT
+    function parseMoedaBR(str) {
+      if (!str) return 0;
+      let limpo = str.toString().replace(/[^\d,]/g, '').replace(',', '.');
+      let val = parseFloat(limpo);
+      return isNaN(val) ? 0 : val;
+    }
+
+    // FORMATAÇÃO DE NÚMERO PARA MOEDA BRASILEIRA
+    function formatarMoedaBR(valor) {
+      return (Number(valor) || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    // VALIDAÇÃO DE IDADE E EXIBIÇÃO DE EMANCIPAÇÃO (PASSO 1)
+    function validarIdadeOnChange() {
+      const idadeInput = document.getElementById('inputIdade');
+      const boxEmancipado = document.getElementById('boxEmancipado');
+      const idadeFeedback = document.getElementById('idadeFeedback');
+      const idade = parseInt(idadeInput.value, 10);
+
+      if (isNaN(idade)) {
+        idadeFeedback.innerHTML = '';
+        boxEmancipado.classList.add('hidden');
+        return;
+      }
+
+      if (idade < 16) {
+        idadeFeedback.innerHTML = `<span class="text-rose-600 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i> Menor de 16 anos não é permitido por lei.</span>`;
+        boxEmancipado.classList.add('hidden');
+      } else if (idade === 16 || idade === 17) {
+        idadeFeedback.innerHTML = `<span class="text-amber-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> Idade entre 16 e 17 anos: Exige comprovação de emancipação legal.</span>`;
+        boxEmancipado.classList.remove('hidden');
+      } else if (idade > 70) {
+        idadeFeedback.innerHTML = `<span class="text-rose-600 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i> Acima de 70 anos: Limite máximo de idade do programa excedido.</span>`;
+        boxEmancipado.classList.add('hidden');
+      } else {
+        idadeFeedback.innerHTML = `<span class="text-emerald-700 font-medium flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Faixa etária regular permitida (18 a 70 anos).</span>`;
+        boxEmancipado.classList.add('hidden');
+      }
+
+      atualizarValidacaoPasso1();
+    }
+
+    function atualizarValidacaoPasso1() {
+      sincronizarCamposComEstado();
+    }
+
+    // AVALIAÇÃO DE IMPEDIMENTOS LEGAIS (PASSO 2)
+    function avaliarImpedimentos() {
+      const servidor = document.querySelector('input[name="impServidor"]:checked')?.value === 'sim';
+      const incra = document.querySelector('input[name="impIncra"]:checked')?.value === 'sim';
+      const imovel = document.querySelector('input[name="impImovel"]:checked')?.value === 'sim';
+      const parentes = document.querySelector('input[name="impParentes"]:checked')?.value === 'sim';
+      const consentimentoHerdeiro = document.querySelector('input[name="parenteConsentimento"]:checked')?.value === 'sim';
+
+      document.getElementById('msgImp1').classList.toggle('hidden', !servidor);
+      document.getElementById('msgImp2').classList.toggle('hidden', !incra);
+      document.getElementById('msgImp3').classList.toggle('hidden', !imovel);
+
+      // Tratamento da Pergunta 4: Imóvel de parentes permitido SE cônjuge for herdeiro de consentimento
+      const boxConsentimento = document.getElementById('boxConsentimentoHerdeiro');
+      const msgImp4 = document.getElementById('msgImp4');
+      const msgAprovadoHerdeiro = document.getElementById('msgAprovadoHerdeiro');
+
+      let impedimentoParentes = false;
+
+      if (parentes) {
+        if (boxConsentimento) boxConsentimento.classList.remove('hidden');
+        if (consentimentoHerdeiro) {
+          // É de parente, mas o cônjuge é herdeiro com consentimento -> ELEGÍVEL!
+          if (msgImp4) msgImp4.classList.add('hidden');
+          if (msgAprovadoHerdeiro) msgAprovadoHerdeiro.classList.remove('hidden');
+          impedimentoParentes = false;
+        } else {
+          // É de parente e NÃO tem consentimento de herdeiro -> IMPEDIMENTO!
+          if (msgImp4) msgImp4.classList.remove('hidden');
+          if (msgAprovadoHerdeiro) msgAprovadoHerdeiro.classList.add('hidden');
+          impedimentoParentes = true;
+        }
+      } else {
+        if (boxConsentimento) boxConsentimento.classList.add('hidden');
+        if (msgImp4) msgImp4.classList.add('hidden');
+        if (msgAprovadoHerdeiro) msgAprovadoHerdeiro.classList.add('hidden');
+        impedimentoParentes = false;
+      }
+
+      const possuiImpedimento = servidor || incra || imovel || impedimentoParentes;
+      const boxStatus = document.getElementById('boxStatusImpedimentos');
+
+      if (possuiImpedimento) {
+        boxStatus.className = 'mt-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm flex items-center gap-3';
+        boxStatus.innerHTML = `
+          <i class="fa-solid fa-triangle-exclamation text-rose-600 text-lg"></i>
+          <div>
+            <strong class="font-bold">Atenção: Impedimento legal sinalizado!</strong>
+            <p class="text-rose-800 text-xs">Para ser aprovado, o proponente não pode incidir em nenhuma das vedações legais acima.</p>
+          </div>
+        `;
+      } else {
+        boxStatus.className = 'mt-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm flex items-center gap-3';
+        boxStatus.innerHTML = `
+          <i class="fa-solid fa-circle-check text-gov-green text-lg"></i>
+          <div>
+            <strong class="font-bold">Nenhum impedimento legal sinalizado!</strong>
+            <p class="text-emerald-800 text-xs">Todas as respostas atendem às exigências de segurança jurídica do programa.</p>
+          </div>
+        `;
+      }
+
+      sincronizarCamposComEstado();
+    }
+
+    // DETERMINAÇÃO DA LINHA DE CRÉDITO SOCIOECONÔMICA (PASSO 3)
+    function recalcularLinhaCredito() {
+      sincronizarCamposComEstado();
+
+      const { idade, renda, patrimonio, cadUnico } = estado;
+      let linha = null;
+      let statusEnquadramento = '';
+
+      // Teto máximo absoluto do PNCF
+      if (renda > 327785.79 || patrimonio > 500000.00) {
+        linha = null;
+        statusEnquadramento = 'renda_acima_teto';
+      } else {
+        // Avaliação de prioridade da linha mais vantajosa (menor taxa / maior bônus)
+
+        // 1. PNCF Social: Renda <= 30.359,63 && Patrimonio <= 70.000 && CadUnico == true
+        if (renda <= 30359.63 && patrimonio <= 70000.00 && cadUnico) {
+          linha = TABELA_LINHAS_2026.social;
+        }
+        // 2. PNCF Terra da Juventude: Idade 16 a 30 anos, Renda <= 60.719,26, Patrimonio <= 140.000,00
+        else if (idade >= 16 && idade <= 30 && renda <= 60719.26 && patrimonio <= 140000.00) {
+          linha = TABELA_LINHAS_2026.juventude;
+        }
+        // 3. PNCF Mais Terra: Renda <= 60.719,26 && Patrimonio <= 140.000,00
+        else if (renda <= 60719.26 && patrimonio <= 140000.00) {
+          linha = TABELA_LINHAS_2026.maisTerra;
+        }
+        // 4. PNCF Empreendedor: Renda de 60.719,27 a 327.785,79 && Patrimonio <= 500.000,00
+        else if (renda <= 327785.79 && patrimonio <= 500000.00) {
+          linha = TABELA_LINHAS_2026.empreendedor;
+        } else {
+          linha = null;
+          statusEnquadramento = 'nao_enquadrado';
+        }
+      }
+
+      estado.linhaEnquadrada = linha;
+
+      // Renderizar feedback visual no card do Passo 3
+      const card = document.getElementById('cardLinhaResultado');
+      if (linha) {
+        card.className = 'p-5 sm:p-6 rounded-2xl border transition-all duration-300 bg-white border-blue-200 shadow-sm';
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Linha Enquadrada Oficialmente</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold ${linha.corBadge}">
+                  ${linha.nome}
+                </span>
+              </div>
+              <h4 class="text-xl font-extrabold text-gov-blue mt-1">${linha.nome} (2026)</h4>
+              <p class="text-xs text-gray-600 mt-1 max-w-xl">${linha.descricao}</p>
+            </div>
+            <div class="bg-blue-50/80 p-3.5 rounded-xl border border-blue-100 flex sm:flex-col justify-between sm:justify-center items-center text-center shrink-0 min-w-[140px]">
+              <div>
+                <span class="text-[10px] text-gray-500 uppercase block font-semibold">Taxa de Juros</span>
+                <span class="text-lg font-black text-gov-blue">${linha.jurosTexto}</span>
+              </div>
+              <div class="sm:mt-2 sm:pt-2 sm:border-t sm:border-blue-200">
+                <span class="text-[10px] text-gray-500 uppercase block font-semibold">Bônus de Adimplência</span>
+                <span class="text-sm font-bold text-gov-green">${linha.bonusTexto} OFF</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        card.className = 'p-5 sm:p-6 rounded-2xl border transition-all duration-300 bg-rose-50 border-rose-200';
+        card.innerHTML = `
+          <div class="flex items-start gap-3 text-rose-900">
+            <i class="fa-solid fa-triangle-exclamation text-rose-600 text-xl mt-0.5 shrink-0"></i>
+            <div>
+              <h4 class="font-bold text-sm sm:text-base">Fora dos Limites Socioeconômicos das Linhas PNCF 2026</h4>
+              <p class="text-xs text-rose-800 mt-1">
+                A renda familiar (R$ ${formatarMoedaBR(renda)}) ou patrimônio (R$ ${formatarMoedaBR(patrimonio)}) ultrapassaram os limites permitidos pelo Ofício Circular MDA nº 2/2026 (Teto máximo de renda: R$ 327.785,79 | Teto de patrimônio: R$ 500.000,00).
+              </p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // SINCRONIZAÇÃO COMPLETA DE DADOS COM O ESTADO
+    function sincronizarCamposComEstado() {
+      estado.nome = document.getElementById('inputNome').value.trim();
+      estado.idade = parseInt(document.getElementById('inputIdade').value, 10) || 0;
+      estado.emancipado = document.getElementById('checkEmancipado').checked;
+      estado.experiencia = parseInt(document.getElementById('inputExperiencia').value, 10) || 0;
+
+      estado.impServidor = document.querySelector('input[name="impServidor"]:checked')?.value === 'sim';
+      estado.impIncra = document.querySelector('input[name="impIncra"]:checked')?.value === 'sim';
+      estado.impImovel = document.querySelector('input[name="impImovel"]:checked')?.value === 'sim';
+      estado.impParentes = document.querySelector('input[name="impParentes"]:checked')?.value === 'sim';
+      estado.parenteConsentimento = document.querySelector('input[name="parenteConsentimento"]:checked')?.value === 'sim';
+
+      estado.renda = parseMoedaBR(document.getElementById('inputRenda').value);
+      estado.patrimonio = parseMoedaBR(document.getElementById('inputPatrimonio').value);
+      estado.cadUnico = document.querySelector('input[name="radioCadUnico"]:checked')?.value === 'sim';
+
+      estado.sat = parseMoedaBR(document.getElementById('inputSAT').value);
+      estado.sib = parseMoedaBR(document.getElementById('inputSIB').value);
+      estado.despesas = parseMoedaBR(document.getElementById('inputDespesas').value);
+      estado.ater = parseMoedaBR(document.getElementById('inputATER').value);
+    }
+
+    // VERIFICAÇÃO INTEGRAL DE ELEGIBILIDADE E MOTIVOS
+    function verificarElegibilidadeIntegral() {
+      sincronizarCamposComEstado();
+      const motivos = [];
+
+      // 1. Regra de Idade
+      if (estado.idade < 16) {
+        motivos.push('Idade inferior a 16 anos (vedado por lei).');
+      } else if (estado.idade === 16 || estado.idade === 17) {
+        if (!estado.emancipado) {
+          motivos.push('Jovens de 16 ou 17 anos precisam comprovar emancipação legal em cartório.');
+        }
+      } else if (estado.idade > 70) {
+        motivos.push('Idade superior a 70 anos completos (limite máximo regulamentar do PNCF).');
+      }
+
+      // 2. Regra de Experiência Rural
+      let minExp = 5;
+      if (estado.idade >= 16 && estado.idade <= 19) {
+        minExp = 2; // Para jovens de 16 a 19 anos o mínimo exigido cai para 2 anos
+      }
+      if (estado.experiencia < minExp) {
+        motivos.push(`Experiência rural insuficiente: declarados ${estado.experiencia} ano(s), exigido no mínimo ${minExp} anos nos últimos 15 anos.`);
+      }
+
+      // 3. Impedimentos Legais
+      if (estado.impServidor) {
+        motivos.push('Vedação Legal: Servidor público, empregado público ou contratado pelo governo (Lei 8.429/92).');
+      }
+      if (estado.impIncra) {
+        motivos.push('Vedação Legal: Já foi beneficiário de Reforma Agrária (INCRA) ou Crédito Fundiário (FTRA).');
+      }
+      if (estado.impImovel) {
+        motivos.push('Vedação Legal: Já possui imóvel rural com área igual ou superior à fração mínima de parcelamento/subsistência.');
+      }
+      if (estado.impParentes && !estado.parenteConsentimento) {
+        motivos.push('Vedação Legal: Compra de imóvel de parentes de até 2º grau sem comprovação de que o cônjuge é herdeiro de consentimento.');
+      }
+
+      // 4. Limites Socioeconômicos
+      if (estado.renda > 327785.79) {
+        motivos.push(`Renda Bruta Familiar Anual (R$ ${formatarMoedaBR(estado.renda)}) acima do teto máximo de R$ 327.785,79.`);
+      }
+      if (estado.patrimonio > 500000.00) {
+        motivos.push(`Patrimônio Líquido Declarado (R$ ${formatarMoedaBR(estado.patrimonio)}) acima do teto máximo de R$ 500.000,00.`);
+      }
+
+      estado.elegivel = (motivos.length === 0);
+      estado.motivosReprovacao = motivos;
+      return estado.elegivel;
+    }
+
+    // CALCULADORA DE FINANCIAMENTO & TRAVAS 2026 (PASSO 4)
+    function recalcularFinanciamento() {
+      sincronizarCamposComEstado();
+      verificarElegibilidadeIntegral();
+      recalcularLinhaCredito();
+
+      const { sat, sib, despesas, ater, linhaEnquadrada, elegivel } = estado;
+      const totalProjeto = sat + sib + despesas + ater;
+      estado.totalFinanciado = totalProjeto;
+
+      // Validação Trava 1: Teto Unificado Global 2026 (R$ 306.044,77)
+      const feedTravaGlobal = document.getElementById('feedbackTravaGlobal');
+      const excedeuTetoGlobal = totalProjeto > TETO_UNIFICADO_GLOBAL_2026;
+      if (excedeuTetoGlobal) {
+        feedTravaGlobal.innerHTML = `
+          <div class="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-800 flex items-center gap-2 font-medium">
+            <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base shrink-0"></i>
+            <span><strong>Teto Global Excedido:</strong> O valor total de ${formatarMoedaBR(totalProjeto)} ultrapassa o teto máximo de R$ 306.044,77 fixado para 2026. Reduza SAT ou SIB para prosseguir.</span>
+          </div>
+        `;
+      } else {
+        feedTravaGlobal.innerHTML = `
+          <div class="text-emerald-700 font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Valor Total dentro do Teto Global 2026 (${formatarMoedaBR(totalProjeto)} de máx. R$ 306.044,77).</span>
+          </div>
+        `;
+      }
+
+      // Validação Trava 2: Teto de ATER (R$ 26.200,00)
+      const feedTravaATER = document.getElementById('feedbackTravaATER');
+      const excedeuATER = ater > TETO_ATER_2026;
+      if (excedeuATER) {
+        feedTravaATER.innerHTML = `
+          <div class="p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-rose-800 flex items-center gap-2 font-medium">
+            <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base shrink-0"></i>
+            <span>O valor do Plano de ATER (${formatarMoedaBR(ater)}) excede o teto permitido de R$ 26.200,00 (Nota Técnica nº 3/2026/CGCF-MDA).</span>
+          </div>
+        `;
+      } else {
+        feedTravaATER.innerHTML = '';
+      }
+
+      // Validação Trava 3: Margem Obrigatória do SIB + Despesas: (SIB + Despesas) / Total entre 10% e 50%
+      let margemSIB = 0;
+      if (totalProjeto > 0) {
+        margemSIB = ((sib + despesas) / totalProjeto) * 100;
+      }
+      estado.margemSIB = margemSIB;
+
+      const labelMargem = document.getElementById('labelMargemSIB');
+      const barraSIB = document.getElementById('barraProgressoSIB');
+      const feedMargemSIB = document.getElementById('feedbackMargemSIB');
+
+      labelMargem.textContent = `${margemSIB.toFixed(1)}%`;
+      barraSIB.style.width = `${Math.min(100, Math.max(0, margemSIB))}%`;
+
+      let margemValida = (margemSIB >= 10 && margemSIB <= 50);
+
+      if (margemSIB < 10) {
+        barraSIB.className = 'h-full bg-amber-500 transition-all duration-300';
+        feedMargemSIB.innerHTML = `
+          <span class="text-amber-800 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation"></i> Margem abaixo de 10%: A soma de SIB e Despesas deve ser de no mínimo 10% do projeto.
+          </span>
+        `;
+      } else if (margemSIB > 50) {
+        barraSIB.className = 'h-full bg-rose-600 transition-all duration-300';
+        feedMargemSIB.innerHTML = `
+          <span class="text-rose-700 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation"></i> Margem acima de 50%: A soma de SIB e Despesas não pode ultrapassar 50% do total do projeto.
+          </span>
+        `;
+      } else {
+        barraSIB.className = 'h-full bg-gov-green transition-all duration-300';
+        feedMargemSIB.innerHTML = `
+          <span class="text-emerald-700 font-medium flex items-center gap-1">
+            <i class="fa-solid fa-circle-check"></i> Margem regular: Investimentos básicos e despesas representam ${margemSIB.toFixed(1)}% do projeto.
+          </span>
+        `;
+      }
+
+      // FÓRMULA OFICIAL DE PARCELAS:
+      // Parcela_Bruta = (Total_Financiado * (1 + (Taxa_Juros * 25))) / 25
+      // Parcela_Com_Bonus = Parcela_Bruta * (1 - Adimplencia)
+      const taxaJuros = linhaEnquadrada ? linhaEnquadrada.juros : 0.025;
+      const bonusAdimplencia = linhaEnquadrada ? linhaEnquadrada.bonus : 0.20;
+
+      let parcelaBruta = 0;
+      let parcelaComBonus = 0;
+
+      if (totalProjeto > 0 && !excedeuTetoGlobal && !excedeuATER) {
+        parcelaBruta = (totalProjeto * (1 + (taxaJuros * PRAZO_ANOS))) / PRAZO_ANOS;
+        parcelaComBonus = parcelaBruta * (1 - bonusAdimplencia);
+      }
+
+      estado.parcelaBruta = parcelaBruta;
+      estado.parcelaComBonus = parcelaComBonus;
+      estado.economiaAnual = Math.max(0, parcelaBruta - parcelaComBonus);
+      estado.economiaTotal = estado.economiaAnual * PRAZO_ANOS;
+
+      // ATUALIZAÇÃO DOS CARDS DE RESULTADOS
+      document.getElementById('resTotalFinanciado').textContent = formatarMoedaBR(totalProjeto);
+      document.getElementById('resLinhaNome').textContent = linhaEnquadrada ? linhaEnquadrada.nome : 'Sem enquadramento';
+      document.getElementById('resTaxaJuros').textContent = linhaEnquadrada ? linhaEnquadrada.jurosTexto : '--';
+
+      document.getElementById('resParcelaBruta').textContent = formatarMoedaBR(parcelaBruta);
+      document.getElementById('resParcelaComBonus').textContent = formatarMoedaBR(parcelaComBonus);
+      document.getElementById('resEconomiaAnual').textContent = formatarMoedaBR(estado.economiaAnual);
+      document.getElementById('resEconomiaTotal').textContent = formatarMoedaBR(estado.economiaTotal);
+
+      document.getElementById('badgeBonusPorcento').textContent = linhaEnquadrada ? `${linhaEnquadrada.bonusTexto} OFF` : '0% OFF';
+
+      // PAINEL DE STATUS GERAL DE ELEGIBILIDADE (CAIXA VERDE OU CAIXA VERMELHA)
+      const painel = document.getElementById('painelStatusElegibilidade');
+      const btnPDF = document.getElementById('btnGerarPDF');
+
+      const financeiroValido = !excedeuTetoGlobal && !excedeuATER && margemValida;
+      const statusFinalAprovado = elegivel && linhaEnquadrada && financeiroValido;
+
+      if (statusFinalAprovado) {
+        painel.className = 'mb-8 p-5 sm:p-6 rounded-2xl border bg-emerald-50 border-emerald-300 text-emerald-950 shadow-sm';
+        painel.innerHTML = `
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gov-green text-white flex items-center justify-center text-2xl shadow-sm shrink-0">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-200 text-emerald-900 uppercase">
+                    Elegibilidade 2026: Confirmada
+                  </span>
+                  <span class="text-xs text-emerald-800 font-semibold">• Protocolo de Simulação Ativo</span>
+                </div>
+                <h3 class="text-xl sm:text-2xl font-black text-emerald-950 mt-1">
+                  Proponente Elegível ao Crédito Terra Brasil!
+                </h3>
+                <p class="text-xs sm:text-sm text-emerald-900 mt-1">
+                  Parabéns! O perfil de <strong>${estado.nome || 'Agricultor(a)'}</strong> atende a todos os critérios e enquadra-se na linha <strong>${linhaEnquadrada.nome}</strong>.
+                </p>
+              </div>
+            </div>
+            <div class="text-right shrink-0 self-end sm:self-auto">
+              <span class="inline-block px-3 py-1 bg-white text-gov-green border border-emerald-300 rounded-lg text-xs font-bold shadow-sm">
+                <i class="fa-solid fa-award text-amber-500 mr-1"></i> Apto à Contratação
+              </span>
+            </div>
+          </div>
+        `;
+        btnPDF.disabled = false;
+        btnPDF.classList.remove('opacity-60', 'cursor-not-allowed');
+      } else {
+        let listaErros = [...estado.motivosReprovacao];
+        if (!linhaEnquadrada) listaErros.push('Não foi possível enquadrar em nenhuma linha de crédito do PNCF 2026.');
+        if (excedeuTetoGlobal) listaErros.push(`Teto Global Excedido: Total (${formatarMoedaBR(totalProjeto)}) > R$ 306.044,77.`);
+        if (excedeuATER) listaErros.push(`Valor de ATER (${formatarMoedaBR(ater)}) superior ao teto de R$ 26.200,00.`);
+        if (!margemValida) listaErros.push(`Margem de SIB e Despesas (${margemSIB.toFixed(1)}%) fora do intervalo obrigatório de 10% a 50%.`);
+
+        painel.className = 'mb-8 p-5 sm:p-6 rounded-2xl border bg-rose-50 border-rose-300 text-rose-950 shadow-sm';
+        painel.innerHTML = `
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-rose-600 text-white flex items-center justify-center text-2xl shadow-sm shrink-0">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+            <div class="w-full">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-extrabold bg-rose-200 text-rose-900 uppercase">
+                  Diagnóstico: Inelegível / Com Pendências
+                </span>
+              </div>
+              <h3 class="text-xl sm:text-2xl font-black text-rose-950 mt-1">
+                Atenção aos Apontamentos de Inelegibilidade
+              </h3>
+              <p class="text-xs sm:text-sm text-rose-900 mt-1">
+                Foram identificadas as seguintes pendências para a contratação da operação em 2026:
+              </p>
+              <ul class="mt-3 space-y-1.5 text-xs text-rose-900 bg-white/70 p-3.5 rounded-xl border border-rose-200">
+                ${listaErros.map(e => `<li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5 shrink-0"></i> <span>${e}</span></li>`).join('')}
+              </ul>
+              <p class="text-[11px] text-rose-700 mt-2">
+                Você pode retornar aos passos anteriores nos botões acima para ajustar os dados ou consultar a assistência técnica (ATER).
+              </p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // NAVEGAÇÃO ENTRE OS PASSOS
+    function navegarParaPasso(passo) {
+      if (passo < 1 || passo > 4) return;
+
+      // Validação rápida ao avançar do passo 1
+      if (estado.passoAtual === 1 && passo > 1) {
+        const nome = document.getElementById('inputNome').value.trim();
+        const idade = parseInt(document.getElementById('inputIdade').value, 10);
+        if (!nome) {
+          alert('Por favor, informe o Nome Completo do proponente antes de continuar.');
+          document.getElementById('inputNome').focus();
+          return;
+        }
+        if (isNaN(idade) || idade < 16) {
+          alert('Por favor, informe uma idade válida (mínimo 16 anos).');
+          document.getElementById('inputIdade').focus();
+          return;
+        }
+      }
+
+      // Esconder todos os passos
+      for (let i = 1; i <= 4; i++) {
+        const sec = document.getElementById(`step${i}`);
+        if (sec) sec.classList.add('hidden');
+      }
+
+      // Mostrar passo selecionado
+      const secDestino = document.getElementById(`step${passo}`);
+      if (secDestino) secDestino.classList.remove('hidden');
+
+      estado.passoAtual = passo;
+
+      // Atualizar estilos dos bubbles da barra de passos
+      for (let i = 1; i <= 4; i++) {
+        const header = document.getElementById(`stepHeader${i}`);
+        if (i < passo) {
+          header.className = 'step-item completed flex flex-col items-center text-center cursor-pointer relative z-10';
+          header.querySelector('.step-bubble').innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+        } else if (i === passo) {
+          header.className = 'step-item active flex flex-col items-center text-center cursor-pointer relative z-10';
+          header.querySelector('.step-bubble').innerHTML = `<span class="step-num">${i}</span>`;
+        } else {
+          header.className = 'step-item pending flex flex-col items-center text-center cursor-pointer relative z-10';
+          header.querySelector('.step-bubble').innerHTML = `<span class="step-num">${i}</span>`;
+        }
+      }
+
+      // Atualizar linha conectora
+      const progressLine = document.getElementById('progressBarLine');
+      if (progressLine) {
+        const perc = ((passo - 1) / 3) * 100;
+        progressLine.style.width = `${Math.max(25, perc)}%`;
+      }
+
+      // Atualizar botões de navegação
+      const btnVoltar = document.getElementById('btnVoltar');
+      const btnAvancar = document.getElementById('btnAvancar');
+      const txtPasso = document.getElementById('textoPassoAtual');
+
+      if (passo === 1) {
+        btnVoltar.classList.add('hidden');
+        btnAvancar.innerHTML = `<span>Avançar para Impedimentos</span> <i class="fa-solid fa-arrow-right"></i>`;
+        txtPasso.textContent = 'Passo 1 de 4: Perfil Pessoal';
+      } else if (passo === 2) {
+        btnVoltar.classList.remove('hidden');
+        btnAvancar.innerHTML = `<span>Avançar para Renda &amp; Linha</span> <i class="fa-solid fa-arrow-right"></i>`;
+        txtPasso.textContent = 'Passo 2 de 4: Impedimentos Legais';
+      } else if (passo === 3) {
+        btnVoltar.classList.remove('hidden');
+        btnAvancar.innerHTML = `<span>Calcular Financiamento &amp; Resultados</span> <i class="fa-solid fa-arrow-right"></i>`;
+        txtPasso.textContent = 'Passo 3 de 4: Dados Socioeconômicos';
+      } else if (passo === 4) {
+        btnVoltar.classList.remove('hidden');
+        btnAvancar.classList.add('hidden');
+        txtPasso.textContent = 'Passo 4 de 4: Simulação e Parecer Oficial';
+        recalcularFinanciamento();
+
+        // Se elegível, dispara efeito de confete comemorativo
+        if (estado.elegivel && estado.linhaEnquadrada && typeof confetti === 'function') {
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.7 }
+          });
+        }
+      }
+
+      if (passo < 4) {
+        btnAvancar.classList.remove('hidden');
+      }
+
+      // Rolar suavemente para o topo do formulário
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    function proximoPasso() {
+      navegarParaPasso(estado.passoAtual + 1);
+    }
+
+    function passoAnterior() {
+      navegarParaPasso(estado.passoAtual - 1);
+    }
+
+    // CARREGAR CENÁRIOS PRONTOS DE TESTE
+    function carregarCenario(tipo) {
+      if (tipo === 'social') {
+        document.getElementById('inputNome').value = 'Raimunda Nonata dos Santos';
+        document.getElementById('inputIdade').value = '38';
+        document.getElementById('checkEmancipado').checked = false;
+        document.getElementById('inputExperiencia').value = '12';
+        setRadiosImpedimento(false);
+        document.getElementById('inputRenda').value = '24.800,00';
+        document.getElementById('inputPatrimonio').value = '35.000,00';
+        document.querySelector('input[name="radioCadUnico"][value="sim"]').checked = true;
+        document.getElementById('inputSAT').value = '170.000,00';
+        document.getElementById('inputSIB').value = '45.000,00';
+        document.getElementById('inputDespesas').value = '14.000,00';
+        document.getElementById('inputATER').value = '26.200,00';
+      } else if (tipo === 'juventude') {
+        document.getElementById('inputNome').value = 'Lucas Gabriel Barbosa';
+        document.getElementById('inputIdade').value = '22';
+        document.getElementById('checkEmancipado').checked = false;
+        document.getElementById('inputExperiencia').value = '4';
+        setRadiosImpedimento(false);
+        document.getElementById('inputRenda').value = '38.000,00';
+        document.getElementById('inputPatrimonio').value = '20.000,00';
+        document.querySelector('input[name="radioCadUnico"][value="nao"]').checked = true;
+        document.getElementById('inputSAT').value = '190.000,00';
+        document.getElementById('inputSIB').value = '55.000,00';
+        document.getElementById('inputDespesas').value = '16.000,00';
+        document.getElementById('inputATER').value = '26.200,00';
+      } else if (tipo === 'maisterra') {
+        document.getElementById('inputNome').value = 'Antônio Carlos Meireles';
+        document.getElementById('inputIdade').value = '45';
+        document.getElementById('checkEmancipado').checked = false;
+        document.getElementById('inputExperiencia').value = '18';
+        setRadiosImpedimento(false);
+        document.getElementById('inputRenda').value = '52.000,00';
+        document.getElementById('inputPatrimonio').value = '95.000,00';
+        document.querySelector('input[name="radioCadUnico"][value="nao"]').checked = true;
+        document.getElementById('inputSAT').value = '210.000,00';
+        document.getElementById('inputSIB').value = '45.000,00';
+        document.getElementById('inputDespesas').value = '18.000,00';
+        document.getElementById('inputATER').value = '26.200,00';
+      }
+
+      validarIdadeOnChange();
+      avaliarImpedimentos();
+      recalcularLinhaCredito();
+      recalcularFinanciamento();
+      navegarParaPasso(4);
+    }
+
+    function setRadiosImpedimento(impedimentoSim) {
+      const val = impedimentoSim ? 'sim' : 'nao';
+      document.querySelector(`input[name="impServidor"][value="${val}"]`).checked = true;
+      document.querySelector(`input[name="impIncra"][value="${val}"]`).checked = true;
+      document.querySelector(`input[name="impImovel"][value="${val}"]`).checked = true;
+      document.querySelector(`input[name="impParentes"][value="${val}"]`).checked = true;
+      const rConsentimento = document.querySelector(`input[name="parenteConsentimento"][value="${impedimentoSim ? 'nao' : 'sim'}"]`);
+      if (rConsentimento) rConsentimento.checked = true;
+    }
+
+    function reiniciarSimulacao() {
+      if (confirm('Deseja reiniciar a simulação e limpar todos os campos?')) {
+        document.getElementById('inputNome').value = '';
+        document.getElementById('inputIdade').value = '';
+        document.getElementById('checkEmancipado').checked = false;
+        document.getElementById('inputExperiencia').value = '';
+        setRadiosImpedimento(false);
+        document.getElementById('inputRenda').value = '0,00';
+        document.getElementById('inputPatrimonio').value = '0,00';
+        document.querySelector('input[name="radioCadUnico"][value="nao"]').checked = true;
+        document.getElementById('inputSAT').value = '180.000,00';
+        document.getElementById('inputSIB').value = '50.000,00';
+        document.getElementById('inputDespesas').value = '15.000,00';
+        document.getElementById('inputATER').value = '26.200,00';
+
+        validarIdadeOnChange();
+        avaliarImpedimentos();
+        recalcularLinhaCredito();
+        recalcularFinanciamento();
+        navegarParaPasso(1);
+      }
+    }
+
+    // =========================================================================
+    // SANITIZAÇÃO DE NOMES E GERENCIADOR ROBUSTO DE DOWNLOAD DE PDF
+    // =========================================================================
+    function sanitizarNomeArquivo(nome) {
+      if (!nome || typeof nome !== 'string') return 'Agricultor_Familiar';
+      return nome
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // remove acentos
+        .replace(/[^a-zA-Z0-9_-]/g, '_') // substitui caracteres especiais, espaços e parênteses por sublinhado
+        .replace(/_+/g, '_')              // remove repetições consecutivas de _
+        .replace(/^_|_$/g, '') || 'Agricultor_Familiar';
+    }
+
+    function exibirToastSucesso(mensagem) {
+      let toast = document.getElementById('toastNotificacao');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toastNotificacao';
+        toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-emerald-500/40 text-xs sm:text-sm font-semibold transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `
+        <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 text-sm">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div>
+          <span class="block text-emerald-300 text-[11px] font-bold uppercase">Concluído</span>
+          <span class="text-white">${mensagem}</span>
+        </div>
+      `;
+      toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+      }, 4500);
+    }
+
+    async function salvarOuAbrirPDF(doc, proponente, modo = 'download') {
+      const nomeBase = sanitizarNomeArquivo(proponente);
+      const nomeArquivoFinal = `PNCF_Simulacao_2026_${nomeBase}.pdf`;
+
+      // Gerar Blob nativo
+      let pdfBlob = null;
+      try {
+        const rawBlob = doc.output('blob');
+        pdfBlob = new Blob([rawBlob], { type: 'application/pdf' });
+      } catch (errBlob) {
+        console.warn('Erro ao gerar blob do PDF:', errBlob);
+      }
+
+      // =====================================================================
+      // CASO 1: MODO VISUALIZAR EM NOVA ABA
+      // =====================================================================
+      if (modo === 'visualizar') {
+        if (pdfBlob) {
+          const blobUrl = window.URL.createObjectURL(pdfBlob);
+          window.open(blobUrl, '_blank');
+          exibirToastSucesso('Visualização aberta em nova aba.');
+        } else {
+          doc.output('dataurlnewwindow');
+        }
+        return;
+      }
+
+      // =====================================================================
+      // CASO 2: MODO DOWNLOAD
+      // ESTRATÉGIA 1: File System Access API (Padrão do Chrome e Edge no Windows)
+      // Abre o diálogo nativo do Windows com o nome e extensão .pdf garantidos!
+      // =====================================================================
+      if (typeof window.showSaveFilePicker === 'function' && pdfBlob) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: nomeArquivoFinal,
+            types: [{
+              description: 'Documento PDF (*.pdf)',
+              accept: { 'application/pdf': ['.pdf'] }
+            }]
+          });
+          const writableStream = await handle.createWritable();
+          await writableStream.write(pdfBlob);
+          await writableStream.close();
+          exibirToastSucesso(`Arquivo salvo: <strong>${nomeArquivoFinal}</strong>`);
+          return;
+        } catch (pickerErr) {
+          if (pickerErr.name === 'AbortError') {
+            // Usuário cancelou a janela de salvar, não precisa fazer nada
+            return;
+          }
+          console.warn('showSaveFilePicker não concluído, tentando métodos alternativos:', pickerErr);
+        }
+      }
+
+      // =====================================================================
+      // ESTRATÉGIA 2: Data URL (Base64) com Synthetic MouseEvent
+      // Data URLs NÃO possuem URL path/UUID, forçando o Chrome a respeitar a.download!
+      // =====================================================================
+      try {
+        let dataUrlString = null;
+        if (pdfBlob) {
+          dataUrlString = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(pdfBlob);
+          });
+        } else {
+          dataUrlString = doc.output('datauristring');
+        }
+
+        if (dataUrlString) {
+          const aData = document.createElement('a');
+          aData.style.display = 'none';
+          aData.href = dataUrlString;
+          aData.download = nomeArquivoFinal;
+          aData.setAttribute('download', nomeArquivoFinal);
+          document.body.appendChild(aData);
+
+          // Disparar MouseEvent real
+          aData.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          }));
+
+          setTimeout(() => {
+            if (aData.parentNode) document.body.removeChild(aData);
+          }, 1500);
+
+          exibirToastSucesso(`Arquivo baixado: <strong>${nomeArquivoFinal}</strong>`);
+          return;
+        }
+      } catch (errDataUrl) {
+        console.warn('Estratégia Data URL falhou:', errDataUrl);
+      }
+
+      // =====================================================================
+      // ESTRATÉGIA 3: Blob URL com Synthetic MouseEvent (sem target="_blank")
+      // =====================================================================
+      if (pdfBlob) {
+        try {
+          const blobUrl = window.URL.createObjectURL(pdfBlob);
+          const aBlob = document.createElement('a');
+          aBlob.style.display = 'none';
+          aBlob.href = blobUrl;
+          aBlob.download = nomeArquivoFinal;
+          aBlob.setAttribute('download', nomeArquivoFinal);
+          document.body.appendChild(aBlob);
+
+          aBlob.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          }));
+
+          setTimeout(() => {
+            if (aBlob.parentNode) document.body.removeChild(aBlob);
+            window.URL.revokeObjectURL(blobUrl);
+          }, 45000);
+
+          exibirToastSucesso(`Download iniciado: <strong>${nomeArquivoFinal}</strong>`);
+          return;
+        } catch (errBlobDownload) {
+          console.warn('Estratégia Blob URL falhou:', errBlobDownload);
+        }
+      }
+
+      // =====================================================================
+      // FALLBACK FINAL: jsPDF save nativo ou abrir em nova aba
+      // =====================================================================
+      try {
+        doc.save(nomeArquivoFinal);
+        exibirToastSucesso(`Download iniciado: <strong>${nomeArquivoFinal}</strong>`);
+      } catch (errSaveFinal) {
+        console.error('Falha geral no download:', errSaveFinal);
+        doc.output('dataurlnewwindow');
+      }
+    }
+
+    // =========================================================================
+    // GERADOR DE RELATÓRIO PDF EM CLIENT-SIDE (JSPDF + CHECKLIST PERSONALIZADO)
+    // =========================================================================
+    async function gerarRelatorioPDF(modo = 'download') {
+      sincronizarCamposComEstado();
+      recalcularFinanciamento();
+
+      const { jsPDF } = window.jspdf || {};
+      if (!jsPDF) {
+        alert('Erro ao carregar a biblioteca de geração de PDF. Verifique a conexão com a internet.');
+        return;
+      }
+
+      // Criar documento PDF A4 em milímetros
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const proponente = estado.nome || 'Agricultor(a) Familiar';
+      const protocolo = `PNCF-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+      const dataEmissao = new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+
+      // 1. CABEÇALHO GOV.BR (#0C326F e #1351B4)
+      doc.setFillColor(12, 50, 111); // Azul Petróleo Gov.br
+      doc.rect(0, 0, 210, 28, 'F');
+
+      // Linha de detalhe amarela do Brasil
+      doc.setFillColor(255, 205, 7);
+      doc.rect(0, 28, 210, 2, 'F');
+
+      // Título Institucional no cabeçalho
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(255, 255, 255);
+      doc.text('PROGRAMA NACIONAL DE CRÉDITO FUNDIÁRIO — PNCF 2026', 15, 12);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(220, 230, 250);
+      doc.text('Ministério do Desenvolvimento Agrário e Agricultura Familiar • Serviço Obter Crédito Terra Brasil', 15, 18);
+      doc.text(`Protocolo de Diagnóstico: ${protocolo}  |  Emissão: ${dataEmissao}`, 15, 24);
+
+      let cursorY = 38;
+
+      // 2. STATUS E RESUMO DO PROPONENTE
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(19, 81, 180);
+      doc.text('1. IDENTIFICAÇÃO DO PROPONENTE E DIAGNÓSTICO', 15, cursorY);
+
+      cursorY += 4;
+      const statusBoxCor = estado.elegivel ? [230, 244, 234] : [252, 235, 232];
+      const statusBorderCor = estado.elegivel ? [22, 136, 33] : [229, 34, 7];
+
+      doc.setFillColor(statusBoxCor[0], statusBoxCor[1], statusBoxCor[2]);
+      doc.setDrawColor(statusBorderCor[0], statusBorderCor[1], statusBorderCor[2]);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(15, cursorY, 180, 24, 3, 3, 'FD');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      if (estado.elegivel) {
+        doc.setTextColor(15, 91, 22);
+        doc.text('STATUS: ELEGÍVEL / APTO PARA PROJETO TÉCNICO', 20, cursorY + 7);
+      } else {
+        doc.setTextColor(165, 19, 0);
+        doc.text('STATUS: INELEGÍVEL / COM APONTAMENTOS DE RESTRIÇÃO', 20, cursorY + 7);
+      }
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`Proponente: ${proponente}`, 20, cursorY + 13);
+      doc.text(`Idade: ${estado.idade} anos  |  Experiência Rural: ${estado.experiencia} anos  |  CadÚnico: ${estado.cadUnico ? 'Sim (Ativo)' : 'Não'}`, 20, cursorY + 18);
+      doc.text(`Linha de Enquadramento: ${estado.linhaEnquadrada ? estado.linhaEnquadrada.nome : 'Não Enquadrado'}`, 110, cursorY + 13);
+      doc.text(`Renda Bruta Anual: ${formatarMoedaBR(estado.renda)}  |  Patrimônio: ${formatarMoedaBR(estado.patrimonio)}`, 110, cursorY + 18);
+
+      cursorY += 30;
+
+      // 3. TABELA DE COMPOSIÇÃO FINANCEIRA
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(19, 81, 180);
+      doc.text('2. COMPOSIÇÃO DO FINANCIAMENTO & ESTIMATIVA DE PARCELAS', 15, cursorY);
+      cursorY += 3;
+
+      const financeRows = [
+        ['Aquisição de Terra (SAT)', formatarMoedaBR(estado.sat), 'Solo e benfeitorias existentes'],
+        ['Investimentos Básicos (SIB)', formatarMoedaBR(estado.sib), 'Moradia, água, cercas, infraestrutura'],
+        ['Despesas Acessórias', formatarMoedaBR(estado.despesas), 'ITBI, Cartório e Georreferenciamento'],
+        ['Plano de ATER (5 anos)', formatarMoedaBR(estado.ater), 'Assistência Técnica (Teto legal: R$ 26.200,00)'],
+        ['VALOR TOTAL FINANCIADO', formatarMoedaBR(estado.totalFinanciado), 'Teto Global 2026: R$ 306.044,77'],
+        ['Margem SIB + Despesas', `${estado.margemSIB.toFixed(1)}%`, 'Exigência legal: entre 10% e 50%'],
+        ['Taxa de Juros Anual', estado.linhaEnquadrada ? estado.linhaEnquadrada.jurosTexto : '--', 'Prazo: 25 anos (3 anos carência)'],
+        ['Parcela Anual Contratual (Bruta)', formatarMoedaBR(estado.parcelaBruta), 'Sem o desconto de adimplência'],
+        ['Parcela com BÔNUS DE ADIMPLÊNCIA', formatarMoedaBR(estado.parcelaComBonus), `Desconto de ${estado.linhaEnquadrada ? estado.linhaEnquadrada.bonusTexto : '0%'} ao pagar em dia`],
+        ['ECONOMIA ANUAL GERADA PELO BÔNUS', formatarMoedaBR(estado.economiaAnual), `Economia em 25 anos: ${formatarMoedaBR(estado.economiaTotal)}`]
+      ];
+
+      doc.autoTable({
+        startY: cursorY,
+        head: [['Item do Projeto', 'Valor Simulado', 'Referência Regulamentar 2026']],
+        body: financeRows,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [19, 81, 180],
+          textColor: [255, 255, 255],
+          fontSize: 8,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 7.5,
+          cellPadding: 1.8
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 65, fontStyle: 'bold' },
+          1: { cellWidth: 45, fontStyle: 'bold', halign: 'right' },
+          2: { cellWidth: 70, textColor: [80, 80, 80] }
+        },
+        margin: { left: 15, right: 15 }
+      });
+
+      cursorY = doc.lastAutoTable.finalY + 8;
+
+      // 4. CHECKLIST DE DOCUMENTOS DIVIDIDO POR NÚCLEOS
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(19, 81, 180);
+      doc.text('3. CHECKLIST OFICIAL DE DOCUMENTOS (EXERCÍCIO 2026)', 15, cursorY);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text('Marque as caixas [ ] conforme reunir os documentos para entrega à entidade de ATER ou agente financeiro:', 15, cursorY + 4);
+
+      cursorY += 7;
+
+      const checklistData = [
+        ['[ ]', 'NÚCLEO 1: PROPONENTE E FAMÍLIA', 'RG e CPF do titular e cônjuge/companheiro; Certidão de Estado Civil atualizada.'],
+        ['[ ]', 'NÚCLEO 1: PROPONENTE E FAMÍLIA', 'Extrato CNIS Rural (Meu INSS) ou comprovação de 5 anos de atividade rural (2 anos se 16-19 anos).'],
+        ['[ ]', 'NÚCLEO 1: PROPONENTE E FAMÍLIA', 'Certidão de Quitação Eleitoral e Certidões Negativas Cíveis e Criminais (Justiça Estadual e Federal).'],
+        ['[ ]', 'NÚCLEO 1: PROPONENTE E FAMÍLIA', 'Declaração formal de não-servidor público e de não ter sido beneficiário de Reforma Agrária/FTRA.'],
+        ['[ ]', 'NÚCLEO 1: PROPONENTE E FAMÍLIA', 'DAP ativa ou Inscrição no CAF (Cadastro da Agricultura Familiar) e Comprovante de CadÚnico (se Social).'],
+        ['[ ]', 'NÚCLEO 2: IMÓVEL RURAL', 'Certidão de Inteiro Teor da Matrícula atualizada (emitida pelo Cartório de Registro há menos de 30 dias).'],
+        ['[ ]', 'NÚCLEO 2: IMÓVEL RURAL', 'CCIR (Certificado de Cadastro de Imóvel Rural) quitado do último exercício.'],
+        ['[ ]', 'NÚCLEO 2: IMÓVEL RURAL', 'Comprovante de pagamento dos 5 últimos ITRs ou Certidão Negativa de Débitos da Receita Federal.'],
+        ['[ ]', 'NÚCLEO 2: IMÓVEL RURAL', 'Recibo de inscrição no Cadastro Ambiental Rural (CAR) ativo e regularizado.'],
+        ['[ ]', 'NÚCLEO 2: IMÓVEL RURAL', 'Planta topográfica e Memorial Descritivo com polígono em formato Shapefile (SIRGAS 2000).'],
+        ['[ ]', 'NÚCLEO 3: VENDEDOR DA TERRA', 'RG, CPF e Certidão de Casamento/União dos proprietários vendedores.'],
+        ['[ ]', 'NÚCLEO 3: VENDEDOR DA TERRA', 'Certidão Conjunta Negativa de Débitos Federais (Receita Federal e PGFN) do vendedor.'],
+        ['[ ]', 'NÚCLEO 3: VENDEDOR DA TERRA', 'Certidões Negativas de Débitos Trabalhistas (CNDT) e da Justiça Federal.'],
+        ['[ ]', 'NÚCLEO 3: VENDEDOR DA TERRA', 'Termo de Intenção de Venda e Anuência de Preço (com Termo de Consentimento de Herdeiros/Cônjuge se imóvel de parentes).'],
+        ['[ ]', 'NÚCLEO 4: ATER E PROJETO', 'ART ou TRT quitada do Responsável Técnico pelo projeto (Engenheiro Agrônomo / Técnico Agrícola).'],
+        ['[ ]', 'NÚCLEO 4: ATER E PROJETO', 'Projeto Técnico de Financiamento (PTF) e Estudo de Viabilidade Econômico-Social.'],
+        ['[ ]', 'NÚCLEO 4: ATER E PROJETO', 'Subprojeto SAT (Laudo de Avaliação da Terra) e Subprojeto SIB (cronograma de infraestrutura básica).'],
+        ['[ ]', 'NÚCLEO 4: ATER E PROJETO', 'Plano de Acompanhamento Técnico (PAT) para 5 anos de ATER formalizado por entidade credenciada.']
+      ];
+
+      doc.autoTable({
+        startY: cursorY,
+        head: [['Status', 'Núcleo Documental', 'Documento Exigido e Descrição']],
+        body: checklistData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [12, 50, 111],
+          textColor: [255, 255, 255],
+          fontSize: 7.5,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 6.8,
+          cellPadding: 1.4
+        },
+        columnStyles: {
+          0: { cellWidth: 12, halign: 'center', fontStyle: 'bold' },
+          1: { cellWidth: 48, fontStyle: 'bold', textColor: [19, 81, 180] },
+          2: { cellWidth: 120 }
+        },
+        margin: { left: 15, right: 15 }
+      });
+
+      // RODAPÉ INSTITUCIONAL
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.line(15, 285, 195, 285);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(120, 120, 120);
+        doc.text('Nota Legal: Este documento é uma simulação preliminar e não substitui a análise de crédito oficial dos agentes financeiros.', 15, 289);
+        doc.text(`Página ${i} de ${totalPages} • Serviço Digital Obter Crédito Terra Brasil • gov.br`, 15, 293);
+      }
+
+      // Disparar Download ou Visualização de forma 100% segura e compatível
+      await salvarOuAbrirPDF(doc, proponente, modo);
+    }
+
+    // ACESSIBILIDADE: ALTO CONTRASTE E TAMANHO DE FONTE
+    function toggleContrast() {
+      document.body.classList.toggle('high-contrast');
+    }
+
+    let nivelFonte = 0;
+    function alterarFonte(delta) {
+      nivelFonte += delta;
+      if (nivelFonte < -2) nivelFonte = -2;
+      if (nivelFonte > 4) nivelFonte = 4;
+      document.documentElement.style.fontSize = `${16 + nivelFonte * 1.5}px`;
+    }
+  </script>
+</body>
+
+</html>
